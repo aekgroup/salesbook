@@ -1,7 +1,6 @@
 import Dexie, { Table } from 'dexie';
-import { nanoid } from 'nanoid';
 import { differenceInDays, subDays } from 'date-fns';
-import { Preferences, Product, Sale, SaleItem, Status } from '../../shared/types';
+import { PaymentMethodOption, Preferences, Product, Sale, SaleItem, Status } from '../../shared/types';
 import { APP_CURRENCY, DEFAULT_PAYMENT_METHODS, DEFAULT_STATUSES } from '../../shared/constants';
 
 export class SalesbookDB extends Dexie {
@@ -25,48 +24,20 @@ export class SalesbookDB extends Dexie {
 
 export const db = new SalesbookDB();
 
-const random = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-
-const demoProducts = () => {
-  const now = new Date();
-  const statuses = DEFAULT_STATUSES;
-  return Array.from({ length: 12 }).map((_, idx) => {
-    const purchasePrice = random(5, 70);
-    const salePrice = purchasePrice + random(5, 40);
-    const created = subDays(now, random(1, 30));
-    return {
-      id: nanoid(),
-      sku: `SKU-${1000 + idx}`,
-      name: `Produit ${idx + 1}`,
-      category: idx % 2 === 0 ? 'Électronique' : 'Accessoires',
-      brand: idx % 2 === 0 ? 'Aek' : 'Générique',
-      purchasePrice,
-      salePrice,
-      quantity: random(0, 60),
-      statusId: statuses[idx % statuses.length].label,
-      reorderThreshold: 10,
-      createdAt: created.toISOString(),
-      updatedAt: created.toISOString(),
-    } satisfies Product;
-  });
-};
-
 export async function seedInitialData() {
   const statusCount = await db.statuses.count();
   if (statusCount === 0) {
     await db.statuses.bulkAdd(
-      DEFAULT_STATUSES.map((status) => ({
+      DEFAULT_STATUSES.map((status): Status => ({
         id: status.label,
-        ...status,
+        color: status.color,
+        isDefault: status.isDefault,
+        label: status.label,
+        order: status.order,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       })),
     );
-  }
-
-  const productCount = await db.products.count();
-  if (productCount === 0) {
-    await db.products.bulkAdd(demoProducts());
   }
 
   const prefsCount = await db.preferences.count();
@@ -74,7 +45,7 @@ export async function seedInitialData() {
     await db.preferences.add({
       id: 'default',
       currency: APP_CURRENCY,
-      paymentMethods: DEFAULT_PAYMENT_METHODS.map((method) => ({ ...method })),
+      paymentMethods: DEFAULT_PAYMENT_METHODS.map((method): PaymentMethodOption => ({ ...method })),
       updatedAt: new Date().toISOString(),
     });
   }

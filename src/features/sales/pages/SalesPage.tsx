@@ -29,7 +29,7 @@ export const SalesPage = () => {
   const salesQuery = useSales(filters);
   const productsQuery = useProducts(emptyProductFilters);
   const { createMutation, updateMutation, deleteMutation } = useSaleMutations();
-  const sales = salesQuery.data ?? [];
+  const sales = useMemo(() => salesQuery.data ?? [], [salesQuery.data]);
   const products = productsQuery.data ?? [];
 
   const summary = useMemo(() => {
@@ -141,7 +141,7 @@ export const SalesPage = () => {
           {renderHeaderActions()}
         </div>
         <dl className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatsCard label="Commandes" value={summary.totalOrders} />
+          <StatsCard label="Ventes" value={summary.totalOrders} />
           <StatsCard label="Revenu" value={formatCurrency(summary.totalRevenue)} />
           <StatsCard label="Profit" value={formatCurrency(summary.totalProfit)} variant="success" />
           <StatsCard label="Panier moyen" value={formatCurrency(summary.avgOrder)} />

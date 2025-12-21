@@ -40,7 +40,7 @@ export const DashboardPage = () => {
         icon: <TrendingUp className="h-6 w-6" />,
       },
       {
-        title: 'Commandes',
+        title: 'Ventes',
         value: data ? formatNumber(data.salesCount) : '—',
         hint: data ? `Panier moyen ${formatCurrency(data.avgOrderValue)}` : 'En cours de calcul',
         icon: <ShoppingBag className="h-6 w-6" />,
