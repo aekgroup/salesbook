@@ -104,24 +104,32 @@ export const ProductsPage = () => {
     }
   };
 
-  const handleExportCsv = () => {
-    exportToCsv(
-      products.map((product) => ({
-        SKU: product.sku,
-        Nom: product.name,
-        Catégorie: product.category,
-        Stock: product.quantity,
-        'Prix vente': product.salePrice,
-        'Prix achat': product.purchasePrice,
-        Statut: statuses.find((s) => s.id === product.statusId)?.label ?? 'N/A',
-      })),
-      `produits-${new Date().toISOString()}`,
-    );
-  };
+const safeTimestamp = () => {
+  // 20251228-213512
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+};
 
-  const handleExportJson = () => {
-    exportToJson(products, `produits-${new Date().toISOString()}`);
-  };
+const handleExportCsv = () => {
+  exportToCsv(
+    products.map((product) => ({
+      SKU: product.sku,
+      Nom: product.name,
+      Catégorie: product.category,
+      Stock: product.quantity,
+      "Prix vente": product.salePrice,
+      "Prix achat": product.purchasePrice,
+      Statut: statuses.find((s) => s.id === product.statusId)?.label ?? "N/A",
+    })),
+    `produits-${safeTimestamp()}`,
+  );
+};
+
+const handleExportJson = () => {
+  exportToJson(products, `produits-${safeTimestamp()}`);
+};
+
 
   const handleSubmitProduct = (values: ProductFormValues) => {
     if (editingProduct) {
