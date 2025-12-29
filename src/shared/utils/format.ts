@@ -2,6 +2,10 @@ import { format, parseISO } from 'date-fns';
 import { Product, Sale } from '../types';
 import { APP_CURRENCY, APP_LOCALE } from '../constants';
 import { getActiveCurrency } from '../state/currencyStore';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+
 import Papa from 'papaparse';
 
 export const formatCurrency = (value: number, locale = APP_LOCALE, currency = getActiveCurrency()) =>
@@ -28,22 +32,79 @@ export const calcSaleTotals = (items: Sale['items']) => {
   return { totalRevenue, totalCost, totalProfit, margin };
 };
 
-export const exportToCsv = <T extends object>(rows: T[], fileName: string) => {
+const sanitizeFileName = (name: string) =>
+  name
+    .replace(/[:]/g, '-')           // évite ":" (ISO string)
+    .replace(/[\\/?"<>|*]/g, '-')   // chars invalides Windows/Android providers
+    .replace(/\s+/g, '_');
+
+const toBase64Utf8 = (text: string) => btoa(unescape(encodeURIComponent(text)));
+
+const writeAndShare = async (params: { content: string; fileName: string; mimeType: string }) => {
+  const safeName = sanitizeFileName(params.fileName);
+
+  const res = await Filesystem.writeFile({
+    path: safeName,
+    data: toBase64Utf8(params.content),
+    directory: Directory.Documents,
+    recursive: true,
+  });
+
+  await Share.share({
+    title: 'Export',
+    text: `Fichier généré : ${safeName}`,
+    url: res.uri,
+    dialogTitle: 'Partager le fichier',
+  });
+};
+
+export const exportToCsv = async <T extends object>(rows: T[], fileName: string) => {
   const csv = Papa.unparse(rows);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  triggerDownload(blob, `${fileName}.csv`);
+  const fullName = `${fileName}.csv`;
+
+  if (Capacitor.getPlatform() === 'web') {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    triggerDownload(blob, sanitizeFileName(fullName));
+    return;
+  }
+
+  await writeAndShare({
+    content: csv,
+    fileName: fullName,
+    mimeType: 'text/csv;charset=utf-8',
+  });
 };
 
-export const exportToJson = (data: unknown, fileName: string) => {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  triggerDownload(blob, `${fileName}.json`);
-};
+export const exportToJson = async (data: unknown, fileName: string) => {
+  const json = JSON.stringify(data, null, 2);
+  const fullName = `${fileName}.json`;
 
+  if (Capacitor.getPlatform() === 'web') {
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+    triggerDownload(blob, sanitizeFileName(fullName));
+    return;
+  }
+
+  await writeAndShare({
+    content: json,
+    fileName: fullName,
+    mimeType: 'application/json;charset=utf-8',
+  });
+};
 const triggerDownload = (blob: Blob, fileName: string) => {
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.download = sanitizeFileName(fileName);
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+/*const triggerDownload = (blob: Blob, fileName: string) => {
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
   link.href = url;
   link.download = fileName;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-};
+};*/

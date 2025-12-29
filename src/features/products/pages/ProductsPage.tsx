@@ -111,7 +111,27 @@ const safeTimestamp = () => {
   return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
 };
 
-const handleExportCsv = () => {
+const handleExportCsv = async () => {
+  await exportToCsv(
+    products.map((product) => ({
+      SKU: product.sku,
+      Nom: product.name,
+      Catégorie: product.category,
+      Stock: product.quantity,
+      'Prix vente': product.salePrice,
+      'Prix achat': product.purchasePrice,
+      Statut: statuses.find((s) => s.id === product.statusId)?.label ?? 'N/A',
+    })),
+    `produits-${new Date().toISOString()}`,
+  );
+};
+
+const handleExportJson = async () => {
+  await exportToJson(products, `produits-${new Date().toISOString()}`);
+};
+
+
+/*const handleExportCsv = () => {
   exportToCsv(
     products.map((product) => ({
       SKU: product.sku,
@@ -128,7 +148,7 @@ const handleExportCsv = () => {
 
 const handleExportJson = () => {
   exportToJson(products, `produits-${safeTimestamp()}`);
-};
+};*/
 
 
   const handleSubmitProduct = (values: ProductFormValues) => {
