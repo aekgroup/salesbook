@@ -1,31 +1,41 @@
-import { Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import React, { Suspense } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './AuthProvider';
 import { MainLayout } from './MainLayout';
+import { PageLoader } from '../shared/ui/PageLoader';
 import { DashboardPage } from '../features/dashboard/pages/DashboardPage';
 import { ProductsPage } from '../features/products/pages/ProductsPage';
 import { SalesPage } from '../features/sales/pages/SalesPage';
 import { StatusesPage } from '../features/statuses/pages/StatusesPage';
 import { ReportsPage } from '../features/reports/pages/ReportsPage';
 import { PreferencesPage } from '../features/preferences/pages/PreferencesPage';
-import { PageLoader } from '../shared/ui/PageLoader';
+import { PricingPage } from '../features/pricing/pages/PricingPage';
 
-export const App = () => {
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  return <MainLayout>{children}</MainLayout>;
+}
+
+function AuthenticatedApp() {
+  return (
+    <Routes>
+      <Route path="/" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+      <Route path="/products" element={<PrivateRoute><ProductsPage /></PrivateRoute>} />
+      <Route path="/sales" element={<PrivateRoute><SalesPage /></PrivateRoute>} />
+      <Route path="/statuses" element={<PrivateRoute><StatusesPage /></PrivateRoute>} />
+      <Route path="/reports" element={<PrivateRoute><ReportsPage /></PrivateRoute>} />
+      <Route path="/pricing" element={<PrivateRoute><PricingPage /></PrivateRoute>} />
+      <Route path="/preferences" element={<PrivateRoute><PreferencesPage /></PrivateRoute>} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+export function App() {
   return (
     <AuthProvider>
       <Suspense fallback={<PageLoader />}>
-        <MainLayout>
-          <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/sales" element={<SalesPage />} />
-            <Route path="/statuses" element={<StatusesPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/preferences" element={<PreferencesPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </MainLayout>
+        <AuthenticatedApp />
       </Suspense>
     </AuthProvider>
   );
-};
+}

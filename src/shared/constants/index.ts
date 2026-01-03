@@ -1,4 +1,4 @@
-import { LucideIcon, Activity, Layers3, ReceiptText, Settings } from 'lucide-react';
+import { LucideIcon, Activity, Layers3, ReceiptText, Settings, CreditCard } from 'lucide-react';
 
 export interface NavLink {
   label: string;
@@ -10,6 +10,7 @@ export const NAV_LINKS: NavLink[] = [
   { label: 'Dashboard', path: '/', icon: Activity },
   { label: 'Produits', path: '/products', icon: Layers3 },
   { label: 'Ventes', path: '/sales', icon: ReceiptText },
+  { label: 'Tarifs', path: '/pricing', icon: CreditCard },
   { label: 'Préférences', path: '/preferences', icon: Settings },
 ];
 

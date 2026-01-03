@@ -27,6 +27,13 @@ export class AuthService {
     return AuthService.instance;
   }
 
+  addListener(listener: (state: AuthState) => void): () => void {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter(l => l !== listener);
+    };
+  }
+
   private async initializeAuth() {
     try {
       const { data: { session } } = await supabase.auth.getSession();

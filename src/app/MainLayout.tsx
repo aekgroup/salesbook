@@ -4,6 +4,7 @@ import { Link, NavLink } from 'react-router-dom';
 import clsx from 'clsx';
 import { PropsWithChildren, useState } from 'react';
 import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
+import { SubscriptionBanner } from '../components/SubscriptionBanner';
 
 export const MainLayout = ({ children }: PropsWithChildren) => {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -24,6 +25,7 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <SubscriptionBanner />
       <div className="flex min-h-screen">
         <aside
           className={clsx(
