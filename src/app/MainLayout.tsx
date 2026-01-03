@@ -1,14 +1,26 @@
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut, User } from 'lucide-react';
 import { APP_VERSION, NAV_LINKS } from '../shared/constants';
 import { Link, NavLink } from 'react-router-dom';
 import clsx from 'clsx';
 import { PropsWithChildren, useState } from 'react';
+import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
 
 export const MainLayout = ({ children }: PropsWithChildren) => {
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const { user, userProfile, signOut, isAuthenticated } = useSupabaseAuth();
 
   const toggleNav = () => setIsNavOpen((prev) => !prev);
   const closeNav = () => setIsNavOpen(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  const getUsername = () => {
+    if (!userProfile) return '';
+    const username = userProfile.username || userProfile.firstName || '';
+    return username.charAt(0).toUpperCase() + username.slice(1);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -50,6 +62,28 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
             ))}
           </nav>
           <div className="mt-auto rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-xs text-slate-500">
+            {isAuthenticated && userProfile && (
+              <div className="mb-3 pb-3 border-b border-slate-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-slate-600" />
+                    <span className="text-sm font-medium text-slate-900">
+                      {getUsername()}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="text-slate-500 hover:text-slate-700 transition-colors"
+                    title="Se déconnecter"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  {user?.email}
+                </p>
+              </div>
+            )}
             <p className="text-sm font-semibold text-slate-900">Salesbook</p>
             <p>Version {APP_VERSION}</p>
             <p>
@@ -73,7 +107,28 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
                   <p className="text-lg font-semibold text-slate-900">Tableau d’administration</p>
                 </div>
               </div>
-              <div className="hidden text-sm font-medium text-slate-500 md:block">Version {APP_VERSION}</div>
+              <div className="flex items-center gap-4">
+                {isAuthenticated && userProfile && (
+                  <div className="hidden md:flex items-center gap-3">
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-slate-900">
+                        {getUsername()}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {user?.email}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      className="rounded-2xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                      title="Se déconnecter"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+                <div className="hidden text-sm font-medium text-slate-500 md:block">Version {APP_VERSION}</div>
+              </div>
             </div>
           </header>
           <div className="flex-1 p-4 lg:p-8">{children}</div>

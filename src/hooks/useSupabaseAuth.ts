@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { authService, AuthState } from '../data/supabase/auth';
+import { SignUpFormValues } from '../data/supabase/user-types';
 
 export function useSupabaseAuth() {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
+    userProfile: null,
     loading: true,
     error: null
   });
 
   useEffect(() => {
-    // Subscribe to auth changes
     const unsubscribe = authService.subscribe((state) => {
       setAuthState(state);
     });
@@ -28,9 +29,9 @@ export function useSupabaseAuth() {
     return result;
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (userData: SignUpFormValues) => {
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
-    const result = await authService.signUp(email, password);
+    const result = await authService.signUp(userData);
     
     if (!result.success) {
       setAuthState(prev => ({ ...prev, loading: false, error: result.error || null }));
@@ -61,6 +62,7 @@ export function useSupabaseAuth() {
     signOut,
     resetPassword,
     isAuthenticated: authState.user !== null,
-    user: authState.user
+    user: authState.user,
+    userProfile: authState.userProfile
   };
 }
