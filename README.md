@@ -1,74 +1,111 @@
-<<<<<<< HEAD
-# Getting Started with Create React App
+# SalesBook
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Une application de gestion de ventes et de stocks moderne avec React, TypeScript et Supabase.
 
-## Available Scripts
+## Fonctionnalités
 
-In the project directory, you can run:
+- 📦 Gestion des produits (stock, prix, catégories)
+- 💰 Suivi des ventes et des profits
+- 📊 Tableaux de bord et rapports
+- 🔐 Authentification utilisateur avec Supabase
+- 🔄 Synchronisation cloud/multi-appareils
+- 📱 Interface responsive et moderne
 
-### `npm start`
+## Stack Technique
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend**: React 19, TypeScript, Tailwind CSS
+- **Base de données**: Supabase (PostgreSQL)
+- **Stockage local**: Dexie (IndexedDB) pour la migration
+- **État**: React Query, React Hook Form
+- **UI**: Lucide React, Headless UI
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Démarrage Rapide
 
-### `npm test`
+### 1. Cloner le projet
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+git clone <repository-url>
+cd salesbook
+npm install
+```
 
-### `npm run build`
+### 2. Configuration Supabase
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. Créez un nouveau projet sur [supabase.com](https://supabase.com)
+2. Allez dans le SQL Editor de votre projet Supabase
+3. Exécutez le script `supabase-schema.sql` pour créer les tables
+4. Récupérez vos clés depuis Settings > API
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 3. Variables d'environnement
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Copiez `.env.example` vers `.env.local` et configurez vos clés Supabase:
 
-### `npm run eject`
+```bash
+cp .env.example .env.local
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```env
+VITE_SUPABASE_URL=votre_url_supabase
+VITE_SUPABASE_ANON_KEY=votre_clé_anon_supabase
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 4. Lancer l'application
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+npm start
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+L'application sera disponible sur [http://localhost:3000](http://localhost:3000)
 
-## Learn More
+## Migration depuis Dexie
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+L'application détecte automatiquement si vous avez des données locales (Dexie) et vous proposera de les migrer vers Supabase lors de votre première connexion.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Scripts Disponibles
 
-### Code Splitting
+- `npm start` - Lance l'application en mode développement
+- `npm run build` - Build pour la production
+- `npm test` - Lance les tests
+- `npm run lint` - Vérifie le code avec ESLint
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Structure du Projet
 
-### Analyzing the Bundle Size
+```
+src/
+├── components/          # Composants React réutilisables
+├── data/              # Services de données
+│   ├── dexie/         # Base de données locale (migration)
+│   └── supabase/      # Services Supabase
+├── features/          # Fonctionnalités métier
+├── hooks/             # Hooks React personnalisés
+├── shared/            # Types et constantes partagées
+└── styles/            # Styles globaux
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Déploiement
 
-### Making a Progressive Web App
+### Build de Production
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```bash
+npm run build
+```
 
-### Advanced Configuration
+Le dossier `build` contient l'application prête pour le déploiement.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Déploiement sur Vercel/Netlify
 
-### Deployment
+1. Connectez votre dépôt Git
+2. Configurez les variables d'environnement dans les settings du projet
+3. Déployez automatiquement à chaque push
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Contribution
 
-### `npm run build` fails to minify
+1. Fork le projet
+2. Créez une branche feature (`git checkout -b feature/nouvelle-fonction`)
+3. Commitez vos changements (`git commit -am 'Ajout d'une nouvelle fonction'`)
+4. Push vers la branche (`git push origin feature/nouvelle-fonction`)
+5. Créez une Pull Request
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-=======
-# salesbook
->>>>>>> 9f4b086f3dc79bab5666007eaf63ce9415d0d913
+## Licence
+
+Ce projet est sous licence MIT.
