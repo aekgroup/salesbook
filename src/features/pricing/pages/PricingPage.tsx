@@ -88,6 +88,23 @@ export const PricingPage: React.FC = () => {
       popular: true,
       current: subscriptionInfo?.status === 'active',
     },
+    {
+      name: 'À Vie',
+      price: '299€',
+      period: 'paiement unique',
+      description: 'Le meilleur investissement',
+      features: [
+        'Tout de l\'offre Premium',
+        'Mises à jour gratuites à vie',
+        'Support VIP illimité',
+        'Formation prioritaire',
+        'Fonctionnalités exclusives',
+        'Personnalisation avancée',
+        'Sans engagement',
+        'Garantie satisfait ou remboursé (30 jours)',
+      ],
+      current: false, // Pas encore implémenté
+    },
   ];
 
   const getPlanButton = (plan: PricingPlan) => {
@@ -111,6 +128,15 @@ export const PricingPage: React.FC = () => {
       return (
         <button className="w-full bg-red-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-700 transition-colors">
           Renouveler l'abonnement
+        </button>
+      );
+    }
+
+    // Bouton spécial pour l'offre à vie
+    if (plan.name === 'À Vie') {
+      return (
+        <button className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-all transform hover:scale-105">
+          Acheter à vie
         </button>
       );
     }
@@ -165,13 +191,15 @@ export const PricingPage: React.FC = () => {
       </div>
 
       {/* Pricing Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
         {plans.map((plan) => (
           <div
             key={plan.name}
             className={`relative rounded-2xl border-2 p-8 ${
               plan.popular
                 ? 'border-slate-900 bg-slate-50'
+                : plan.name === 'À Vie'
+                ? 'border-purple-600 bg-gradient-to-br from-purple-50 to-indigo-50'
                 : 'border-slate-200 bg-white'
             } ${plan.current ? 'ring-2 ring-green-500' : ''}`}
           >
@@ -180,6 +208,15 @@ export const PricingPage: React.FC = () => {
                 <div className="bg-slate-900 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
                   <Star className="h-4 w-4" />
                   Plus populaire
+                </div>
+              </div>
+            )}
+
+            {plan.name === 'À Vie' && (
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                  <Star className="h-4 w-4" />
+                  Meilleure valeur
                 </div>
               </div>
             )}
@@ -197,7 +234,9 @@ export const PricingPage: React.FC = () => {
                 {plan.name}
               </h3>
               <div className="mb-4">
-                <span className="text-4xl font-bold text-slate-900">
+                <span className={`text-4xl font-bold ${
+                  plan.name === 'À Vie' ? 'text-purple-600' : 'text-slate-900'
+                }`}>
                   {plan.price}
                 </span>
                 <span className="text-slate-600 ml-1">{plan.period}</span>
