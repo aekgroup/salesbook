@@ -63,6 +63,20 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['sale_items']['Row'], 'id'>;
         Update: Partial<Omit<Database['public']['Tables']['sale_items']['Row'], 'id'>>;
       };
+      expenses: {
+        Row: {
+          id: UUID;
+          label: string;
+          category: string;
+          amount: number;
+          date: string;
+          note?: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['expenses']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Database['public']['Tables']['expenses']['Row'], 'id' | 'created_at'>>;
+      };
       preferences: {
         Row: {
           id: string;
@@ -130,6 +144,10 @@ export type SaleUpdate = Database['public']['Tables']['sales']['Update'];
 export type SaleItemRow = Database['public']['Tables']['sale_items']['Row'];
 export type SaleItemInsert = Database['public']['Tables']['sale_items']['Insert'];
 export type SaleItemUpdate = Database['public']['Tables']['sale_items']['Update'];
+
+export type ExpenseRow = Database['public']['Tables']['expenses']['Row'];
+export type ExpenseInsert = Database['public']['Tables']['expenses']['Insert'];
+export type ExpenseUpdate = Database['public']['Tables']['expenses']['Update'];
 
 export type PreferencesRow = Database['public']['Tables']['preferences']['Row'];
 export type PreferencesInsert = Database['public']['Tables']['preferences']['Insert'];

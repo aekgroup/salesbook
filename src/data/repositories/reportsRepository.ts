@@ -5,7 +5,6 @@ import { PreferencesRepository } from './preferencesRepository';
 import { ExpensesRepository } from './expensesRepository';
 import { DateRange, PaymentMethod, PaymentMethodOption, Product, Sale } from '../../shared/types';
 import { calcSaleTotals, calcStockValue } from '../../shared/utils/format';
-import { ensureSeeded } from '../dexie/db';
 import { subDays } from 'date-fns';
 import { DEFAULT_PAYMENT_METHODS } from '../../shared/constants';
 
@@ -67,7 +66,6 @@ export class ReportsRepository {
   ) {}
 
   async getDashboardStats(range: 'day' | 'week' | 'month' | 'custom', customRange?: DateRange): Promise<DashboardStats> {
-    await ensureSeeded();
     const now = new Date();
     let start: Date;
     switch (range) {
@@ -175,7 +173,6 @@ export class ReportsRepository {
   }
 
   async getStockReport(): Promise<StockReport> {
-    await ensureSeeded();
     const products = await this.productsRepository.list();
     const { totalCost, potentialRevenue, lowStock } = calcStockValue(products);
     return {

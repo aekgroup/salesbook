@@ -1,69 +1,68 @@
-import { nanoid } from 'nanoid';
-import { db, ensureSeeded } from '../dexie/db';
+import { StatusService } from '../supabase/services';
 import { Status, StatusFormValues, UUID } from '../../shared/types';
 
 export class StatusesRepository {
   async list(): Promise<Status[]> {
-    await ensureSeeded();
-    return db.statuses.orderBy('order').toArray();
+    return await StatusService.getAll();
   }
 
   async getDefault(): Promise<Status | undefined> {
-    await ensureSeeded();
-    return db.statuses.filter((status) => status.isDefault).first();
+    const statuses = await this.list();
+    return statuses.find((status) => status.isDefault);
   }
 
   async create(payload: StatusFormValues): Promise<Status> {
-    await ensureSeeded();
-    const now = new Date().toISOString();
-    const status: Status = {
-      id: payload.id ?? nanoid(),
+    const status = {
       label: payload.label,
       color: payload.color,
       isDefault: payload.isDefault ?? false,
-      order: payload.order ?? (await db.statuses.count()),
-      createdAt: now,
-      updatedAt: now,
+      order: payload.order ?? (await this.list()).length,
     };
     if (status.isDefault) {
-      await this.clearDefault(status.id);
+      await this.clearDefault();
     }
-    await db.statuses.add(status);
-    return status;
+    return await StatusService.create(status);
   }
 
   async update(id: UUID, updates: Partial<StatusFormValues>): Promise<Status> {
-    const existing = await db.statuses.get(id);
+    const existing = await this.get(id);
     if (!existing) throw new Error('Statut introuvable');
-    const updated: Status = {
-      ...existing,
-      ...updates,
-      updatedAt: new Date().toISOString(),
+    
+    const updateData = {
+      label: updates.label ?? existing.label,
+      color: updates.color ?? existing.color,
+      isDefault: updates.isDefault ?? existing.isDefault,
+      order: updates.order ?? existing.order,
     };
+    
     if (updates.isDefault) {
-      await this.clearDefault(id);
+      await this.clearDefault();
     }
-    await db.statuses.put(updated);
-    return updated;
+    
+    return await StatusService.update(id, updateData);
   }
 
   async remove(id: UUID): Promise<void> {
-    await db.statuses.delete(id);
+    await StatusService.delete(id);
   }
 
   async reorder(ids: UUID[]): Promise<void> {
-    await db.transaction('rw', db.statuses, async () => {
-      for (const [order, id] of ids.entries()) {
-        await db.statuses.update(id, { order });
-      }
-    });
+    for (const [order, id] of ids.entries()) {
+      await StatusService.update(id, { order });
+    }
   }
 
-  private async clearDefault(exceptId?: UUID) {
-    const statuses = await db.statuses.filter((status) => status.isDefault).toArray();
+  private async clearDefault(): Promise<void> {
+    const statuses = await this.list();
     for (const status of statuses) {
-      if (status.id === exceptId) continue;
-      await db.statuses.update(status.id, { isDefault: false });
+      if (status.isDefault) {
+        await StatusService.update(status.id, { isDefault: false });
+      }
     }
+  }
+  
+  private async get(id: UUID): Promise<Status | undefined> {
+    const statuses = await this.list();
+    return statuses.find((status) => status.id === id);
   }
 }

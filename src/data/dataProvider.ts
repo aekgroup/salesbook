@@ -15,7 +15,7 @@ export interface DataProvider {
   expenses: ExpensesRepository;
 }
 
-export class DexieDataProvider implements DataProvider {
+export class SupabaseDataProvider implements DataProvider {
   products: ProductsRepository;
   statuses: StatusesRepository;
   sales: SalesRepository;

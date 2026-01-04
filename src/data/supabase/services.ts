@@ -14,9 +14,12 @@ import {
   SaleItemUpdate,
   PreferencesRow,
   PreferencesInsert,
-  PreferencesUpdate
+  PreferencesUpdate,
+  ExpenseRow,
+  ExpenseInsert,
+  ExpenseUpdate
 } from './types';
-import { Product, Status, Sale, SaleItem, Preferences, PaymentMethodOption } from '../../shared/types';
+import { Product, Status, Sale, SaleItem, Preferences, PaymentMethodOption, Expense } from '../../shared/types';
 
 // Helper functions to convert between Supabase and app formats
 export const supabaseToProduct = (row: ProductRow): Product => ({
@@ -102,6 +105,25 @@ export const saleItemToSupabase = (item: Omit<SaleItem, 'id'>): SaleItemInsert =
   unit_sale_price: item.unitSalePrice,
   unit_cost_price: item.unitCostPrice,
   profit_line: item.profitLine,
+});
+
+export const supabaseToExpense = (row: ExpenseRow): Expense => ({
+  id: row.id,
+  label: row.label,
+  category: row.category,
+  amount: row.amount,
+  date: row.date,
+  note: row.note,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const expenseToSupabase = (expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>): ExpenseInsert => ({
+  label: expense.label,
+  category: expense.category,
+  amount: expense.amount,
+  date: expense.date,
+  note: expense.note,
 });
 
 export const supabaseToPreferences = (row: PreferencesRow): Preferences => ({
@@ -297,6 +319,69 @@ export class SaleService {
     // Then delete the sale
     const { error } = await supabase
       .from('sales')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+}
+
+export class ExpenseService {
+  static async getAll(): Promise<Expense[]> {
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) throw error;
+    return data.map(supabaseToExpense);
+  }
+
+  static async getById(id: string): Promise<Expense | null> {
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return supabaseToExpense(data);
+  }
+
+  static async create(expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>): Promise<Expense> {
+    const { data, error } = await supabase
+      .from('expenses')
+      .insert(expenseToSupabase(expense))
+      .select()
+      .single();
+
+    if (error) throw error;
+    return supabaseToExpense(data);
+  }
+
+  static async update(id: string, updates: Partial<Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Expense> {
+    const supabaseUpdates: ExpenseUpdate = {};
+    
+    if (updates.label !== undefined) supabaseUpdates.label = updates.label;
+    if (updates.category !== undefined) supabaseUpdates.category = updates.category;
+    if (updates.amount !== undefined) supabaseUpdates.amount = updates.amount;
+    if (updates.date !== undefined) supabaseUpdates.date = updates.date;
+    if (updates.note !== undefined) supabaseUpdates.note = updates.note;
+
+    const { data, error } = await supabase
+      .from('expenses')
+      .update(supabaseUpdates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return supabaseToExpense(data);
+  }
+
+  static async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('expenses')
       .delete()
       .eq('id', id);
 

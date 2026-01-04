@@ -3,7 +3,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useMemo } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
-import { DataProviderProvider, DexieDataProvider } from '../data/dataProvider';
+import { DataProviderProvider, SupabaseDataProvider } from '../data/dataProvider';
 import { ToastProvider } from '../shared/ui/ToastProvider';
 
 const queryClient = new QueryClient({
@@ -21,7 +21,7 @@ const queryClient = new QueryClient({
 });
 
 export const AppProviders = () => {
-  const dataProvider = useMemo(() => new DexieDataProvider(), []);
+  const dataProvider = useMemo(() => new SupabaseDataProvider(), []);
 
   return (
     <QueryClientProvider client={queryClient}>

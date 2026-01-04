@@ -109,6 +109,18 @@ CREATE POLICY "Users can update their subscription" ON subscriptions
 CREATE TRIGGER update_subscriptions_updated_at BEFORE UPDATE ON subscriptions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+-- Expenses table
+CREATE TABLE IF NOT EXISTS expenses (
+    id UUID PRIMARY KEY DEFAULT generate_uuid(),
+    label TEXT NOT NULL,
+    category TEXT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL CHECK (amount >= 0),
+    date TEXT NOT NULL, -- ISO date string
+    note TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Preferences table
 CREATE TABLE IF NOT EXISTS preferences (
     id TEXT PRIMARY KEY DEFAULT 'default',
@@ -123,7 +135,9 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_products_sku ON products(sku);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_status_id ON products(status_id);
-CREATE INDEX IF NOT EXISTS idx_products_updated_at ON products(updated_at);
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);
+CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category);
+CREATE INDEX IF NOT EXISTS idx_preferences_updated_at ON preferences(updated_at);
 CREATE INDEX IF NOT EXISTS idx_statuses_order ON statuses("order");
 CREATE INDEX IF NOT EXISTS idx_sales_date ON sales(date);
 CREATE INDEX IF NOT EXISTS idx_sale_items_sale_id ON sale_items(sale_id);
@@ -136,7 +150,7 @@ ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE statuses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sales ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sale_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 
 -- Policies for authenticated users (full access to their own data)
 CREATE POLICY "Users can view their profile" ON users
@@ -196,6 +210,18 @@ CREATE POLICY "Users can update sale items" ON sale_items
 CREATE POLICY "Users can delete sale items" ON sale_items
     FOR DELETE USING (auth.role() = 'authenticated');
 
+CREATE POLICY "Users can view all expenses" ON expenses
+    FOR SELECT USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Users can insert expenses" ON expenses
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Users can update expenses" ON expenses
+    FOR UPDATE USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Users can delete expenses" ON expenses
+    FOR DELETE USING (auth.role() = 'authenticated');
+
 CREATE POLICY "Users can view preferences" ON preferences
     FOR SELECT USING (auth.role() = 'authenticated');
 
@@ -222,6 +248,9 @@ CREATE TRIGGER update_statuses_updated_at BEFORE UPDATE ON statuses
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_sales_updated_at BEFORE UPDATE ON sales
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_expenses_updated_at BEFORE UPDATE ON expenses
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_preferences_updated_at BEFORE UPDATE ON preferences

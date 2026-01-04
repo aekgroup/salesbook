@@ -1,5 +1,4 @@
-import { nanoid } from 'nanoid';
-import { db, ensureSeeded } from '../dexie/db';
+import { ProductService } from '../supabase/services';
 import {
   Product,
   ProductFilters,
@@ -9,8 +8,7 @@ import {
 
 export class ProductsRepository {
   async list(filters: ProductFilters = {}): Promise<Product[]> {
-    await ensureSeeded();
-    const products = await db.products.toArray();
+    const products = await ProductService.getAll();
     const search = filters.search?.toLowerCase();
 
     let filtered = products.filter((product) => {
@@ -32,7 +30,7 @@ export class ProductsRepository {
 
     if (filters.sortBy) {
       const { sortBy, sortDir = 'asc' } = filters;
-      filtered = filtered.sort((a, b) => {
+      filtered = filtered.sort((a: Product, b: Product) => {
         const dir = sortDir === 'asc' ? 1 : -1;
         if (sortBy === 'name') {
           return a.name.localeCompare(b.name) * dir;
@@ -40,23 +38,19 @@ export class ProductsRepository {
         return ((a[sortBy] as number) - (b[sortBy] as number)) * dir;
       });
     } else {
-      filtered = filtered.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+      filtered = filtered.sort((a: Product, b: Product) => b.updatedAt.localeCompare(a.updatedAt));
     }
 
     return filtered;
   }
 
   async get(id: UUID): Promise<Product | undefined> {
-    await ensureSeeded();
-    return db.products.get(id);
+    return await ProductService.getById(id) || undefined;
   }
 
   async create(input: ProductFormValues): Promise<Product> {
-    await ensureSeeded();
     await this.assertUniqueSku(input.sku);
-    const now = new Date().toISOString();
-    const product: Product = {
-      id: input.id ?? nanoid(),
+    const product = {
       sku: input.sku,
       name: input.name,
       category: input.category ?? 'Général',
@@ -66,11 +60,8 @@ export class ProductsRepository {
       quantity: input.quantity ?? 0,
       statusId: input.statusId,
       reorderThreshold: input.reorderThreshold ?? 5,
-      createdAt: now,
-      updatedAt: now,
     };
-    await db.products.add(product);
-    return product;
+    return await ProductService.create(product);
   }
 
   async update(id: UUID, updates: Partial<ProductFormValues>): Promise<Product> {
@@ -81,39 +72,38 @@ export class ProductsRepository {
     if (updates.sku && updates.sku !== existing.sku) {
       await this.assertUniqueSku(updates.sku);
     }
-    const now = new Date().toISOString();
-    const updated: Product = {
-      ...existing,
-      ...updates,
+    const updateData = {
       sku: updates.sku ?? existing.sku,
-      updatedAt: now,
+      name: updates.name ?? existing.name,
+      category: updates.category ?? existing.category,
+      brand: updates.brand ?? existing.brand,
+      purchasePrice: updates.purchasePrice ?? existing.purchasePrice,
+      salePrice: updates.salePrice ?? existing.salePrice,
+      quantity: updates.quantity ?? existing.quantity,
+      statusId: updates.statusId ?? existing.statusId,
+      reorderThreshold: updates.reorderThreshold ?? existing.reorderThreshold,
     };
-    await db.products.put(updated);
-    return updated;
+    return await ProductService.update(id, updateData);
   }
 
   async remove(id: UUID): Promise<void> {
-    await db.products.delete(id);
+    await ProductService.delete(id);
   }
 
   async adjustStock(items: { productId: UUID; delta: number }[]): Promise<void> {
     for (const item of items) {
-      const product = await db.products.get(item.productId);
+      const product = await this.get(item.productId);
       if (!product) continue;
       const quantity = product.quantity + item.delta;
-      await db.products.update(item.productId, {
-        quantity,
-        updatedAt: new Date().toISOString(),
-      });
+      await ProductService.update(item.productId, { quantity });
     }
   }
 
   async getStockSummary() {
-    await ensureSeeded();
-    const products = await db.products.toArray();
-    const totalCost = products.reduce((acc, product) => acc + product.purchasePrice * product.quantity, 0);
-    const totalPotential = products.reduce((acc, product) => acc + product.salePrice * product.quantity, 0);
-    const lowStockCount = products.filter((p) => p.quantity <= p.reorderThreshold).length;
+    const products = await this.list();
+    const totalCost = products.reduce((acc: number, product: Product) => acc + product.purchasePrice * product.quantity, 0);
+    const totalPotential = products.reduce((acc: number, product: Product) => acc + product.salePrice * product.quantity, 0);
+    const lowStockCount = products.filter((p: Product) => p.quantity <= p.reorderThreshold).length;
     return {
       totalCost,
       totalPotential,
@@ -123,7 +113,8 @@ export class ProductsRepository {
   }
 
   private async assertUniqueSku(sku: string) {
-    const existing = await db.products.where('sku').equalsIgnoreCase(sku).first();
+    const products = await this.list();
+    const existing = products.find((product: Product) => product.sku.toLowerCase() === sku.toLowerCase());
     if (existing) {
       throw new Error(`Le SKU ${sku} est déjà utilisé`);
     }

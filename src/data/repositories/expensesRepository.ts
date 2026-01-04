@@ -1,11 +1,9 @@
-import { nanoid } from 'nanoid';
-import { db, ensureSeeded } from '../dexie/db';
+import { ExpenseService } from '../supabase/services';
 import { Expense, ExpenseFilters, ExpenseFormValues, UUID } from '../../shared/types';
 
 export class ExpensesRepository {
   async list(filters: ExpenseFilters = {}): Promise<Expense[]> {
-    await ensureSeeded();
-    const expenses = await db.expenses.toArray();
+    const expenses = await ExpenseService.getAll();
     const search = filters.search?.toLowerCase();
 
     let filtered = expenses.filter((expense) => {
@@ -26,7 +24,6 @@ export class ExpensesRepository {
       return true;
     });
 
-    filtered = filtered.sort((a, b) => b.date.localeCompare(a.date));
     return filtered;
   }
 
@@ -41,25 +38,22 @@ export class ExpensesRepository {
   }
 
   async get(id: UUID): Promise<Expense | undefined> {
-    await ensureSeeded();
-    return db.expenses.get(id);
+    try {
+      return await ExpenseService.getById(id) || undefined;
+    } catch {
+      return undefined;
+    }
   }
 
   async create(input: ExpenseFormValues): Promise<Expense> {
-    await ensureSeeded();
-    const now = new Date().toISOString();
-    const expense: Expense = {
-      id: input.id ?? nanoid(),
+    const expense = {
       label: input.label,
       category: input.category,
       amount: input.amount,
       date: input.date,
       note: input.note,
-      createdAt: now,
-      updatedAt: now,
     };
-    await db.expenses.add(expense);
-    return expense;
+    return await ExpenseService.create(expense);
   }
 
   async update(id: UUID, updates: Partial<ExpenseFormValues>): Promise<Expense> {
@@ -67,23 +61,17 @@ export class ExpensesRepository {
     if (!existing) {
       throw new Error('Dépense introuvable');
     }
-    const now = new Date().toISOString();
-    const updated: Expense = {
-      ...existing,
-      ...updates,
+    const updateData = {
       label: updates.label ?? existing.label,
       category: updates.category ?? existing.category,
       amount: updates.amount ?? existing.amount,
       date: updates.date ?? existing.date,
       note: updates.note ?? existing.note,
-      updatedAt: now,
     };
-    await db.expenses.put(updated);
-    return updated;
+    return await ExpenseService.update(id, updateData);
   }
 
   async remove(id: UUID): Promise<void> {
-    await ensureSeeded();
-    await db.expenses.delete(id);
+    await ExpenseService.delete(id);
   }
 }
