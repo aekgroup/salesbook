@@ -225,8 +225,12 @@ CREATE POLICY "Users can delete expenses" ON expenses
 CREATE POLICY "Users can view preferences" ON preferences
     FOR SELECT USING (auth.role() = 'authenticated');
 
+CREATE POLICY "Users can insert preferences" ON preferences
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
 CREATE POLICY "Users can update preferences" ON preferences
-    FOR UPDATE USING (auth.role() = 'authenticated');
+    FOR UPDATE USING (auth.role() = 'authenticated')
+    WITH CHECK (auth.role() = 'authenticated');
 
 -- Functions for automatic timestamp updates
 CREATE OR REPLACE FUNCTION update_updated_at_column()
