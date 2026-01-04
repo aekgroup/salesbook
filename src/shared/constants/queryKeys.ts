@@ -10,4 +10,6 @@ export const queryKeys = {
   dashboard: (period: string, range?: DateRange | null) =>
     ['dashboard', period, range?.start ?? null, range?.end ?? null] as const,
   preferences: () => ['preferences'] as const,
+  expenses: (filters?: unknown) => ['expenses', filters ?? {}] as const,
+  expenseSummary: (filters?: unknown) => ['expense-summary', filters ?? {}] as const,
 };

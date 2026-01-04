@@ -4,6 +4,7 @@ import { StatusesRepository } from './repositories/statusesRepository';
 import { SalesRepository } from './repositories/salesRepository';
 import { ReportsRepository } from './repositories/reportsRepository';
 import { PreferencesRepository } from './repositories/preferencesRepository';
+import { ExpensesRepository } from './repositories/expensesRepository';
 
 export interface DataProvider {
   products: ProductsRepository;
@@ -11,6 +12,7 @@ export interface DataProvider {
   sales: SalesRepository;
   reports: ReportsRepository;
   preferences: PreferencesRepository;
+  expenses: ExpensesRepository;
 }
 
 export class DexieDataProvider implements DataProvider {
@@ -19,13 +21,15 @@ export class DexieDataProvider implements DataProvider {
   sales: SalesRepository;
   reports: ReportsRepository;
   preferences: PreferencesRepository;
+  expenses: ExpensesRepository;
 
   constructor() {
     this.products = new ProductsRepository();
     this.statuses = new StatusesRepository();
     this.preferences = new PreferencesRepository();
+    this.expenses = new ExpensesRepository();
     this.sales = new SalesRepository(this.products);
-    this.reports = new ReportsRepository(this.products, this.sales, this.statuses, this.preferences);
+    this.reports = new ReportsRepository(this.products, this.sales, this.statuses, this.preferences, this.expenses);
   }
 }
 

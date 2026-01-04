@@ -1,6 +1,14 @@
 import Dexie, { Table } from 'dexie';
 import { differenceInDays, subDays } from 'date-fns';
-import { PaymentMethodOption, Preferences, Product, Sale, SaleItem, Status } from '../../shared/types';
+import {
+  Expense,
+  PaymentMethodOption,
+  Preferences,
+  Product,
+  Sale,
+  SaleItem,
+  Status,
+} from '../../shared/types';
 import { APP_CURRENCY, DEFAULT_PAYMENT_METHODS, DEFAULT_STATUSES } from '../../shared/constants';
 
 export class SalesbookDB extends Dexie {
@@ -9,6 +17,7 @@ export class SalesbookDB extends Dexie {
   sales!: Table<Sale>;
   saleItems!: Table<SaleItem>;
   preferences!: Table<Preferences & { id: string; updatedAt: string }>;
+  expenses!: Table<Expense>;
 
   constructor() {
     super('salesbook');
@@ -18,6 +27,15 @@ export class SalesbookDB extends Dexie {
       sales: '&id, date, totalRevenue, totalProfit',
       saleItems: '&id, saleId, productId',
       preferences: '&id',
+    });
+
+    this.version(2).stores({
+      products: '&id, sku, name, category, statusId, updatedAt, quantity',
+      statuses: '&id, label, order, isDefault',
+      sales: '&id, date, totalRevenue, totalProfit',
+      saleItems: '&id, saleId, productId',
+      preferences: '&id',
+      expenses: '&id, date, category, amount',
     });
   }
 }
@@ -61,31 +79,39 @@ export interface ExportedData {
   statuses: Status[];
   sales: Sale[];
   saleItems: SaleItem[];
+  expenses: Expense[];
 }
 
 export async function exportAllData(): Promise<ExportedData> {
   await ensureSeeded();
-  const [products, statuses, sales, saleItems] = await Promise.all([
+  const [products, statuses, sales, saleItems, expenses] = await Promise.all([
     db.products.toArray(),
     db.statuses.toArray(),
     db.sales.toArray(),
     db.saleItems.toArray(),
+    db.expenses.toArray(),
   ]);
-  return { products, statuses, sales, saleItems };
+  return { products, statuses, sales, saleItems, expenses };
 }
 
 export async function importData(payload: ExportedData) {
-  await db.transaction('rw', db.products, db.statuses, db.sales, db.saleItems, async () => {
-    await db.products.clear();
-    await db.statuses.clear();
-    await db.sales.clear();
-    await db.saleItems.clear();
+  await db.transaction(
+    'rw',
+    [db.products, db.statuses, db.sales, db.saleItems, db.expenses],
+    async () => {
+      await db.products.clear();
+      await db.statuses.clear();
+      await db.sales.clear();
+      await db.saleItems.clear();
+      await db.expenses.clear();
 
-    await db.statuses.bulkAdd(payload.statuses);
-    await db.products.bulkAdd(payload.products);
-    await db.sales.bulkAdd(payload.sales);
-    await db.saleItems.bulkAdd(payload.saleItems);
-  });
+      await db.statuses.bulkAdd(payload.statuses);
+      await db.products.bulkAdd(payload.products);
+      await db.sales.bulkAdd(payload.sales);
+      await db.saleItems.bulkAdd(payload.saleItems);
+      await db.expenses.bulkAdd(payload.expenses);
+    },
+  );
 }
 
 export async function getRecentPerformance(days = 30) {

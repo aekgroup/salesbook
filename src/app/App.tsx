@@ -10,6 +10,7 @@ import { StatusesPage } from '../features/statuses/pages/StatusesPage';
 import { ReportsPage } from '../features/reports/pages/ReportsPage';
 import { PreferencesPage } from '../features/preferences/pages/PreferencesPage';
 import { PricingPage } from '../features/pricing/pages/PricingPage';
+import { ExpensesPage } from '../features/expenses/pages/ExpensesPage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   return <MainLayout>{children}</MainLayout>;
@@ -24,6 +25,7 @@ function AuthenticatedApp() {
       <Route path="/statuses" element={<PrivateRoute><StatusesPage /></PrivateRoute>} />
       <Route path="/reports" element={<PrivateRoute><ReportsPage /></PrivateRoute>} />
       <Route path="/pricing" element={<PrivateRoute><PricingPage /></PrivateRoute>} />
+      <Route path="/expenses" element={<PrivateRoute><ExpensesPage /></PrivateRoute>} />
       <Route path="/preferences" element={<PrivateRoute><PreferencesPage /></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

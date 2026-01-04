@@ -1,4 +1,4 @@
-import { LucideIcon, Activity, Layers3, ReceiptText, Settings, CreditCard } from 'lucide-react';
+import { LucideIcon, Activity, Layers3, ReceiptText, Settings, CreditCard, Wallet } from 'lucide-react';
 
 export interface NavLink {
   label: string;
@@ -10,6 +10,7 @@ export const NAV_LINKS: NavLink[] = [
   { label: 'Dashboard', path: '/', icon: Activity },
   { label: 'Produits', path: '/products', icon: Layers3 },
   { label: 'Ventes', path: '/sales', icon: ReceiptText },
+  { label: 'Dépenses', path: '/expenses', icon: Wallet },
   { label: 'Tarifs', path: '/pricing', icon: CreditCard },
   { label: 'Préférences', path: '/preferences', icon: Settings },
 ];
@@ -41,6 +42,14 @@ export const SUPPORTED_CURRENCIES = [
   { value: 'USD', label: 'Dollar américain (USD)' },
   { value: 'XOF', label: 'Franc CFA (XOF)' },
   { value: 'GBP', label: 'Livre sterling (GBP)' },
+] as const;
+
+export const EXPENSE_CATEGORIES = [
+  { value: 'shipping', label: 'Livraison' },
+  { value: 'fees', label: 'Frais bancaires' },
+  { value: 'marketing', label: 'Marketing' },
+  { value: 'rent', label: 'Loyer' },
+  { value: 'other', label: 'Autres' },
 ] as const;
 
 export const DASHBOARD_PERIODS = [

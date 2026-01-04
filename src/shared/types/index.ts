@@ -134,3 +134,31 @@ export interface Preferences {
   currency: string;
   paymentMethods: PaymentMethodOption[];
 }
+
+export interface Expense {
+  id: UUID;
+  label: string;
+  category: string;
+  amount: number;
+  date: string;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExpenseFilters {
+  search?: string;
+  category?: string;
+  range?: Partial<DateRange>;
+}
+
+export const expenseSchema = z.object({
+  id: z.string().optional(),
+  label: z.string().min(2, 'Nom requis'),
+  category: z.string().min(1, 'Catégorie requise'),
+  amount: z.number().min(0.01, 'Montant invalide'),
+  date: z.string().min(1, 'Date requise'),
+  note: z.string().optional(),
+});
+
+export type ExpenseFormValues = z.infer<typeof expenseSchema>;

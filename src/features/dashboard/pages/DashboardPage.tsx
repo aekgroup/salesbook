@@ -1,4 +1,4 @@
-import { Package2, ShoppingBag, TrendingUp, Wallet2 } from 'lucide-react';
+import { Package2, PiggyBank, ShoppingBag, TrendingUp, Wallet2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { DASHBOARD_PERIODS } from '../../../shared/constants';
 import { formatCurrency, formatNumber } from '../../../shared/utils/format';
@@ -31,12 +31,15 @@ export const DashboardPage = () => {
   const totals = data?.totals;
   const stock = data?.stock;
 
-  const statCards = useMemo(
-    () => [
+  const statCards = useMemo(() => {
+    const expenseTotal = data?.expenseTotal ?? 0;
+    const netProfit = data?.netProfit ?? (totals ? totals.totalProfit : 0);
+
+    return [
       {
         title: 'Chiffre d’affaires',
         value: totals ? formatCurrency(totals.totalRevenue) : '—',
-        hint: totals ? `${formatCurrency(totals.totalProfit)} de profit` : 'En attente des ventes',
+        hint: totals ? `${formatCurrency(totals.totalProfit)} de profit brut` : 'En attente des ventes',
         icon: <TrendingUp className="h-6 w-6" />,
       },
       {
@@ -46,9 +49,15 @@ export const DashboardPage = () => {
         icon: <ShoppingBag className="h-6 w-6" />,
       },
       {
-        title: 'Marge moyenne',
-        value: totals ? `${totals.margin.toFixed(1)} %` : '—',
-        hint: totals ? `${formatCurrency(totals.totalProfit)} de marge nette` : '',
+        title: 'Dépenses',
+        value: totals ? formatCurrency(expenseTotal) : '—',
+        hint: totals ? `Profit net ${formatCurrency(netProfit)}` : '',
+        icon: <PiggyBank className="h-6 w-6" />,
+      },
+      {
+        title: 'Marge nette',
+        value: data ? `${data.netMargin.toFixed(1)} %` : '—',
+        hint: totals ? `${formatCurrency(netProfit)} après charges` : '',
         icon: <Wallet2 className="h-6 w-6" />,
       },
       {
@@ -58,9 +67,8 @@ export const DashboardPage = () => {
         icon: <Package2 className="h-6 w-6" />,
         layout: 'wide' as const,
       },
-    ],
-    [data, stock, totals],
-  );
+    ];
+  }, [data, stock, totals]);
 
   const handlePeriodChange = (value: DashboardPeriod) => {
     setPeriod(value);

@@ -2,6 +2,7 @@ import { ProductsRepository } from './productsRepository';
 import { SalesRepository } from './salesRepository';
 import { StatusesRepository } from './statusesRepository';
 import { PreferencesRepository } from './preferencesRepository';
+import { ExpensesRepository } from './expensesRepository';
 import { DateRange, PaymentMethod, PaymentMethodOption, Product, Sale } from '../../shared/types';
 import { calcSaleTotals, calcStockValue } from '../../shared/utils/format';
 import { ensureSeeded } from '../dexie/db';
@@ -36,6 +37,10 @@ export interface DashboardStats {
   trend: DashboardTrendPoint[];
   paymentOverview: DashboardPaymentStat[];
   recentSales: Sale[];
+  expenseTotal: number;
+  expenseBreakdown: Record<string, number>;
+  netProfit: number;
+  netMargin: number;
 }
 
 interface StockReport {
@@ -58,6 +63,7 @@ export class ReportsRepository {
     private readonly salesRepository: SalesRepository,
     private readonly statusesRepository: StatusesRepository,
     private readonly preferencesRepository: PreferencesRepository,
+    private readonly expensesRepository: ExpensesRepository,
   ) {}
 
   async getDashboardStats(range: 'day' | 'week' | 'month' | 'custom', customRange?: DateRange): Promise<DashboardStats> {
@@ -89,6 +95,10 @@ export class ReportsRepository {
     const topProducts = await this.salesRepository.getTopProducts(5);
     const stock = await this.productsRepository.getStockSummary();
     const preferences = await this.preferencesRepository.get();
+    const expenseSummary = await this.expensesRepository.summary({ range: rangeFilter });
+    const expenseTotal = expenseSummary.total;
+    const netProfit = totals.totalProfit - expenseTotal;
+    const netMargin = totals.totalRevenue === 0 ? 0 : (netProfit / totals.totalRevenue) * 100;
     const paymentOptions: PaymentMethodOption[] =
       preferences.paymentMethods.length > 0
         ? preferences.paymentMethods
@@ -157,6 +167,10 @@ export class ReportsRepository {
       trend,
       paymentOverview,
       recentSales,
+      expenseTotal,
+      expenseBreakdown: expenseSummary.categories,
+      netProfit,
+      netMargin,
     };
   }
 
