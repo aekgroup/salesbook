@@ -51,8 +51,8 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
             <Link to="/" className="flex items-center gap-2 text-xl font-semibold text-slate-900" onClick={closeNav}>
               <div className="rounded-2xl bg-slate-900 px-2.5 py-1 text-sm text-white">SB</div>
               <div>
-                <p>Salesbook</p>
-                <p className="text-xs font-normal text-slate-500">Controle total</p>
+                <p>SalesBook</p>
+                <p className="text-xs font-normal text-slate-500">Vos ventes, enfin organisées.</p>
               </div>
             </Link>
             <button className="rounded-full border border-slate-200 p-2 text-slate-600 md:hidden" onClick={closeNav}>
@@ -100,8 +100,8 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
                 </p>
               </div>
             )}
-            <p className="text-sm font-semibold text-slate-900">Salesbook</p>
-            <p>Version {APP_VERSION}</p>
+            <p className="text-sm font-semibold text-slate-900">SalesBook</p>
+            {/*<p>Version {APP_VERSION}</p>*/}
             <p>
               Powered by <span className="font-semibold text-slate-900">Aek-Group</span>
             </p>
@@ -143,7 +143,7 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
                     </button>
                   </div>
                 )}
-                <div className="hidden text-sm font-medium text-slate-500 md:block">Version {APP_VERSION}</div>
+                {/*<div className="hidden text-sm font-medium text-slate-500 md:block">Version {APP_VERSION}</div>*/}
               </div>
             </div>
           </header>
