@@ -55,12 +55,27 @@ export function useSupabaseAuth() {
     return await authService.resetPassword(email);
   };
 
+  const markPricingAsSeen = async () => {
+    return await authService.markPricingAsSeen();
+  };
+
+  const hasSeenPricing = () => {
+    return authService.hasSeenPricing();
+  };
+
+  const isFirstLogin = () => {
+    return authService.isFirstLogin();
+  };
+
   return {
     ...authState,
     signIn,
     signUp,
     signOut,
     resetPassword,
+    markPricingAsSeen,
+    hasSeenPricing,
+    isFirstLogin,
     isAuthenticated: authState.user !== null,
     user: authState.user,
     userProfile: authState.userProfile

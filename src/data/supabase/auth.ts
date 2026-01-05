@@ -106,6 +106,18 @@ export class AuthService {
       });
 
       if (error) throw error;
+      
+      // Check if this is the first successful login
+      if (data.user && !data.user.user_metadata?.has_seen_pricing) {
+        // Mark that user needs to see pricing page
+        await supabase.auth.updateUser({
+          data: { 
+            has_seen_pricing: false,
+            first_login_completed: true 
+          }
+        });
+      }
+      
       return { success: true, data };
     } catch (error) {
       return { 
@@ -192,6 +204,31 @@ export class AuthService {
         error: error instanceof Error ? error.message : 'Erreur de réinitialisation' 
       };
     }
+  }
+
+  async markPricingAsSeen() {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { has_seen_pricing: true }
+      });
+      
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Erreur de mise à jour' 
+      };
+    }
+  }
+
+  hasSeenPricing(): boolean {
+    return this.user?.user_metadata?.has_seen_pricing === true;
+  }
+
+  isFirstLogin(): boolean {
+    return this.user?.user_metadata?.first_login_completed === true && 
+           this.user?.user_metadata?.has_seen_pricing !== true;
   }
 
   getCurrentUser(): User | null {

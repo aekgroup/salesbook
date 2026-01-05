@@ -39,8 +39,8 @@ export const PaymentOverviewCard = ({ data }: PaymentOverviewCardProps) => {
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-6 md:flex-row">
-          <div className="h-56 flex-1">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-56 flex-1 min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={undefined}>
               <PieChart>
                 <Tooltip content={<PaymentTooltip />} />
                 <Pie data={data} dataKey="share" nameKey="label" innerRadius={60} outerRadius={90} paddingAngle={2}>

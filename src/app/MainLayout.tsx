@@ -6,6 +6,20 @@ import { PropsWithChildren, useState } from 'react';
 import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
 import { SubscriptionBanner } from '../components/SubscriptionBanner';
 
+export function formatName(value: string): string {
+  if (!value) return value;
+
+  return value
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .map(
+      word => word.charAt(0).toUpperCase() + word.slice(1)
+    )
+    .join(' ');
+}
+
+
 export const MainLayout = ({ children }: PropsWithChildren) => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const { user, userProfile, signOut, isAuthenticated } = useSupabaseAuth();
@@ -19,7 +33,7 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
 
   const getUsername = () => {
     if (!userProfile) return '';
-    const username = userProfile.username || userProfile.firstName || '';
+    const username = formatName(userProfile.username) || formatName(userProfile.firstName)|| '';
     return username.charAt(0).toUpperCase() + username.slice(1);
   };
 

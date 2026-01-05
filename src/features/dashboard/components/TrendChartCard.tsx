@@ -37,11 +37,11 @@ export const TrendChartCard = ({ data }: TrendChartCardProps) => {
           <p className="text-xl font-semibold text-slate-900">Performance cumulée</p>
         </div>
       </div>
-      <div className="mt-6 h-72">
+      <div className="mt-6 h-72 min-w-0">
         {data.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-slate-500">Aucune vente dans la période.</div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={undefined}>
             <AreaChart data={data} margin={{ left: 0, top: 10, right: 10, bottom: 0 }}>
               <defs>
                 <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
