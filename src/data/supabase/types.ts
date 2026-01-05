@@ -87,20 +87,6 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['preferences']['Row'], 'id' | 'updated_at'>;
         Update: Partial<Omit<Database['public']['Tables']['preferences']['Row'], 'id'>>;
       };
-      users: {
-        Row: {
-          id: UUID;
-          email: string;
-          first_name: string;
-          last_name: string;
-          username: string;
-          country: string;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: Omit<Database['public']['Tables']['users']['Row'], 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Database['public']['Tables']['users']['Row'], 'id' | 'created_at'>>;
-      };
       subscriptions: {
         Row: {
           id: UUID;
@@ -152,10 +138,6 @@ export type ExpenseUpdate = Database['public']['Tables']['expenses']['Update'];
 export type PreferencesRow = Database['public']['Tables']['preferences']['Row'];
 export type PreferencesInsert = Database['public']['Tables']['preferences']['Insert'];
 export type PreferencesUpdate = Database['public']['Tables']['preferences']['Update'];
-
-export type UserRow = Database['public']['Tables']['users']['Row'];
-export type UserInsert = Database['public']['Tables']['users']['Insert'];
-export type UserUpdate = Database['public']['Tables']['users']['Update'];
 
 export type SubscriptionRow = Database['public']['Tables']['subscriptions']['Row'];
 export type SubscriptionInsert = Database['public']['Tables']['subscriptions']['Insert'];

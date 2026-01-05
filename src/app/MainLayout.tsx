@@ -1,10 +1,10 @@
 import { Menu, X, LogOut, User } from 'lucide-react';
-import { APP_VERSION, NAV_LINKS } from '../shared/constants';
 import { Link, NavLink } from 'react-router-dom';
 import clsx from 'clsx';
 import { PropsWithChildren, useState } from 'react';
 import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
 import { SubscriptionBanner } from '../components/SubscriptionBanner';
+import { NAV_LINKS } from '../shared/constants';
 
 export function formatName(value: string): string {
   if (!value) return value;
@@ -103,7 +103,7 @@ export const MainLayout = ({ children }: PropsWithChildren) => {
             <p className="text-sm font-semibold text-slate-900">SalesBook</p>
             {/*<p>Version {APP_VERSION}</p>*/}
             <p>
-              Powered by <span className="font-semibold text-slate-900">Aek-Group</span>
+              Produit par <span className="font-semibold text-slate-900">AEK Group</span>
             </p>
           </div>
         </aside>

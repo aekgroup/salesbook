@@ -12,18 +12,6 @@ AS $$
     SELECT uuid_generate_v4()
 $$;
 
--- Users table (additional user information)
-CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT generate_uuid(),
-    email TEXT NOT NULL UNIQUE,
-    first_name TEXT NOT NULL,
-    last_name TEXT NOT NULL,
-    username TEXT NOT NULL,
-    country TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
 -- Products table
 CREATE TABLE IF NOT EXISTS products (
     id UUID PRIMARY KEY DEFAULT generate_uuid(),
@@ -130,8 +118,6 @@ CREATE TABLE IF NOT EXISTS preferences (
 );
 
 -- Indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_products_sku ON products(sku);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_status_id ON products(status_id);
@@ -145,7 +131,6 @@ CREATE INDEX IF NOT EXISTS idx_sale_items_product_id ON sale_items(product_id);
 
 -- RLS (Row Level Security) policies
 -- Enable RLS on all tables
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE statuses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sales ENABLE ROW LEVEL SECURITY;
@@ -153,15 +138,6 @@ ALTER TABLE sale_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 
 -- Policies for authenticated users (full access to their own data)
-CREATE POLICY "Users can view their profile" ON users
-    FOR SELECT USING (auth.uid() = id);
-
-CREATE POLICY "Users can insert their profile" ON users
-    FOR INSERT WITH CHECK (auth.uid() = id);
-
-CREATE POLICY "Users can update their profile" ON users
-    FOR UPDATE USING (auth.uid() = id);
-
 CREATE POLICY "Users can view all products" ON products
     FOR SELECT USING (auth.role() = 'authenticated');
 
@@ -242,9 +218,6 @@ END;
 $$ language 'plpgsql';
 
 -- Triggers for updated_at
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 

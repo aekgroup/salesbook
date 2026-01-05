@@ -1,6 +1,5 @@
 import { supabase } from './client';
 import { User } from '@supabase/supabase-js';
-import { UserService } from './userService';
 import { SignUpFormValues } from './user-types';
 
 export interface AuthState {
