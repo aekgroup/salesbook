@@ -3,6 +3,7 @@ import { useToast } from '../../../shared/ui/ToastProvider';
 import { useDataProvider } from '../../../data/dataProvider';
 import { ProductFormValues, UUID } from '../../../shared/types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
+import { formatErrorForToast } from '../../../shared/utils/errorHandling';
 
 export const useProductMutations = () => {
   const provider = useDataProvider();
@@ -20,7 +21,8 @@ export const useProductMutations = () => {
       toast({ variant: 'success', title: 'Produit ajouté' });
     },
     onError: (error: unknown) => {
-      toast({ variant: 'error', title: 'Erreur', description: getErrorMessage(error) });
+      const formattedError = formatErrorForToast(error);
+      toast({ variant: 'error', title: formattedError.title, description: formattedError.description });
     },
   });
 
@@ -31,7 +33,8 @@ export const useProductMutations = () => {
       toast({ variant: 'success', title: 'Produit mis à jour' });
     },
     onError: (error: unknown) => {
-      toast({ variant: 'error', title: 'Erreur', description: getErrorMessage(error) });
+      const formattedError = formatErrorForToast(error);
+      toast({ variant: 'error', title: formattedError.title, description: formattedError.description });
     },
   });
 
@@ -42,7 +45,8 @@ export const useProductMutations = () => {
       toast({ variant: 'success', title: 'Produit supprimé' });
     },
     onError: (error: unknown) => {
-      toast({ variant: 'error', title: 'Erreur', description: getErrorMessage(error) });
+      const formattedError = formatErrorForToast(error);
+      toast({ variant: 'error', title: formattedError.title, description: formattedError.description });
     },
   });
 
@@ -51,9 +55,4 @@ export const useProductMutations = () => {
     updateMutation,
     deleteMutation,
   };
-};
-
-const getErrorMessage = (error: unknown) => {
-  if (error instanceof Error) return error.message;
-  return 'Une erreur inattendue est survenue.';
 };

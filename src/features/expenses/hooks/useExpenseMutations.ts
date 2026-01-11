@@ -3,6 +3,7 @@ import { useDataProvider } from '../../../data/dataProvider';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 import { ExpenseFormValues, UUID } from '../../../shared/types';
 import { useToast } from '../../../shared/ui/ToastProvider';
+import { formatErrorForToast } from '../../../shared/utils/errorHandling';
 
 export const useExpenseMutations = () => {
   const provider = useDataProvider();
@@ -21,8 +22,9 @@ export const useExpenseMutations = () => {
       toast({ title: 'Dépense ajoutée', variant: 'success' });
       invalidate();
     },
-    onError: (error: Error) => {
-      toast({ title: 'Impossible d’ajouter la dépense', description: error.message, variant: 'error' });
+    onError: (error: unknown) => {
+      const formattedError = formatErrorForToast(error);
+      toast({ title: formattedError.title, description: formattedError.description, variant: 'error' });
     },
   });
 
@@ -33,8 +35,9 @@ export const useExpenseMutations = () => {
       toast({ title: 'Dépense mise à jour', variant: 'success' });
       invalidate();
     },
-    onError: (error: Error) => {
-      toast({ title: 'Impossible de mettre à jour', description: error.message, variant: 'error' });
+    onError: (error: unknown) => {
+      const formattedError = formatErrorForToast(error);
+      toast({ title: formattedError.title, description: formattedError.description, variant: 'error' });
     },
   });
 
@@ -44,8 +47,9 @@ export const useExpenseMutations = () => {
       toast({ title: 'Dépense supprimée', variant: 'success' });
       invalidate();
     },
-    onError: (error: Error) => {
-      toast({ title: 'Impossible de supprimer', description: error.message, variant: 'error' });
+    onError: (error: unknown) => {
+      const formattedError = formatErrorForToast(error);
+      toast({ title: formattedError.title, description: formattedError.description, variant: 'error' });
     },
   });
 

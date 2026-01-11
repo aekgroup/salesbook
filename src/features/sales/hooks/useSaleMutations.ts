@@ -3,6 +3,7 @@ import { useDataProvider } from '../../../data/dataProvider';
 import { SaleFormValues, UUID } from '../../../shared/types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 import { useToast } from '../../../shared/ui/ToastProvider';
+import { formatErrorForToast } from '../../../shared/utils/errorHandling';
 
 export const useSaleMutations = () => {
   const provider = useDataProvider();
@@ -21,7 +22,8 @@ export const useSaleMutations = () => {
       toast({ variant: 'success', title: 'Vente enregistrée' });
     },
     onError: (error: unknown) => {
-      toast({ variant: 'error', title: 'Erreur', description: getErrorMessage(error) });
+      const formattedError = formatErrorForToast(error);
+      toast({ variant: 'error', title: formattedError.title, description: formattedError.description });
     },
   });
 
@@ -32,7 +34,8 @@ export const useSaleMutations = () => {
       toast({ variant: 'success', title: 'Vente mise à jour' });
     },
     onError: (error: unknown) => {
-      toast({ variant: 'error', title: 'Erreur', description: getErrorMessage(error) });
+      const formattedError = formatErrorForToast(error);
+      toast({ variant: 'error', title: formattedError.title, description: formattedError.description });
     },
   });
 
@@ -43,7 +46,8 @@ export const useSaleMutations = () => {
       toast({ variant: 'success', title: 'Vente supprimée' });
     },
     onError: (error: unknown) => {
-      toast({ variant: 'error', title: 'Erreur', description: getErrorMessage(error) });
+      const formattedError = formatErrorForToast(error);
+      toast({ variant: 'error', title: formattedError.title, description: formattedError.description });
     },
   });
 
@@ -52,9 +56,4 @@ export const useSaleMutations = () => {
     updateMutation,
     deleteMutation,
   };
-};
-
-const getErrorMessage = (error: unknown) => {
-  if (error instanceof Error) return error.message;
-  return 'Une erreur inattendue est survenue.';
 };

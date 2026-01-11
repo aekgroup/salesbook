@@ -4,6 +4,7 @@ import { queryKeys } from '../../../shared/constants/queryKeys';
 import { useToast } from '../../../shared/ui/ToastProvider';
 import { PaymentMethodOption } from '../../../shared/types';
 import { setActiveCurrency } from '../../../shared/state/currencyStore';
+import { formatErrorForToast } from '../../../shared/utils/errorHandling';
 
 export const usePreferenceMutations = () => {
   const provider = useDataProvider();
@@ -19,8 +20,9 @@ export const usePreferenceMutations = () => {
       toast({ title: 'Devise mise à jour', variant: 'success' });
       invalidate();
     },
-    onError: (error: Error) => {
-      toast({ title: 'Échec de la mise à jour', description: error.message, variant: 'error' });
+    onError: (error: unknown) => {
+      const formattedError = formatErrorForToast(error);
+      toast({ title: formattedError.title, description: formattedError.description, variant: 'error' });
     },
   });
 
@@ -30,8 +32,9 @@ export const usePreferenceMutations = () => {
       toast({ title: 'Méthode ajoutée', variant: 'success' });
       invalidate();
     },
-    onError: (error: Error) => {
-      toast({ title: 'Échec de l’ajout', description: error.message, variant: 'error' });
+    onError: (error: unknown) => {
+      const formattedError = formatErrorForToast(error);
+      toast({ title: formattedError.title, description: formattedError.description, variant: 'error' });
     },
   });
 
@@ -41,8 +44,9 @@ export const usePreferenceMutations = () => {
       toast({ title: 'Méthode supprimée', variant: 'success' });
       invalidate();
     },
-    onError: (error: Error) => {
-      toast({ title: 'Échec de la suppression', description: error.message, variant: 'error' });
+    onError: (error: unknown) => {
+      const formattedError = formatErrorForToast(error);
+      toast({ title: formattedError.title, description: formattedError.description, variant: 'error' });
     },
   });
 
