@@ -5,8 +5,10 @@ import {
   ProductFormValues,
   UUID,
 } from '../../shared/types';
+import { UserService } from '../supabase/userService';
 
 export class ProductsRepository {
+  userService: any;
   async list(filters: ProductFilters = {}): Promise<Product[]> {
     const products = await ProductService.getAll();
     const search = filters.search?.toLowerCase();
@@ -50,7 +52,10 @@ export class ProductsRepository {
 
   async create(input: ProductFormValues): Promise<Product> {
     await this.assertUniqueSku(input.sku);
+    const userId = await this.userService.getCurrentUserId();
+
     const product = {
+      user_id: userId,
       sku: input.sku,
       name: input.name,
       category: input.category ?? 'Général',

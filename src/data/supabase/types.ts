@@ -7,6 +7,7 @@ export interface Database {
       products: {
         Row: {
           id: UUID;
+          user_id: UUID; // Ajouté
           sku: string;
           name: string;
           category: string;
@@ -38,6 +39,7 @@ export interface Database {
       sales: {
         Row: {
           id: UUID;
+          user_id: UUID; // Ajouté
           date: string;
           total_revenue: number;
           total_cost: number;
@@ -66,6 +68,7 @@ export interface Database {
       expenses: {
         Row: {
           id: UUID;
+          user_id: UUID; // Ajouté
           label: string;
           category: string;
           amount: number;
@@ -80,6 +83,7 @@ export interface Database {
       preferences: {
         Row: {
           id: string;
+          user_id: UUID; // Ajouté
           currency: string;
           payment_methods: string; // JSON string
           updated_at: string;

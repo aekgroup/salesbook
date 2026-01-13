@@ -35,6 +35,7 @@ export class SalesRepository {
   async create(input: SaleFormValues): Promise<Sale> {
     const now = new Date().toISOString();
     const saleId = input.id ?? nanoid();
+    
 
     const items: SaleItemModel[] = input.items.map((item) => ({
       id: nanoid(),

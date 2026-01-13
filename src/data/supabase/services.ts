@@ -1,27 +1,41 @@
 import { supabase } from './client';
-import { 
-  ProductRow, 
-  ProductInsert, 
+import {
+  ProductRow,
+  ProductInsert,
   ProductUpdate,
   StatusRow,
   StatusInsert,
   StatusUpdate,
   SaleRow,
   SaleInsert,
-  SaleUpdate,
-  SaleItemRow,
-  SaleItemInsert,
-  SaleItemUpdate,
-  PreferencesRow,
-  PreferencesInsert,
-  PreferencesUpdate,
   ExpenseRow,
   ExpenseInsert,
-  ExpenseUpdate
+  ExpenseUpdate,
+  SaleItemRow,
+  SaleItemInsert,
+  PreferencesRow,
+  PreferencesInsert,
 } from './types';
-import { Product, Status, Sale, SaleItem, Preferences, PaymentMethodOption, Expense } from '../../shared/types';
 
-// Helper functions to convert between Supabase and app formats
+import {
+  Product,
+  Status,
+  Sale,
+  SaleItem,
+  Preferences,
+  PaymentMethodOption,
+  Expense,
+  UUID,
+} from '../../shared/types';
+
+import { UserService } from './userService';
+
+/**
+ * =========================
+ * MAPPERS (Supabase <-> App)
+ * =========================
+ */
+
 export const supabaseToProduct = (row: ProductRow): Product => ({
   id: row.id,
   sku: row.sku,
@@ -37,7 +51,11 @@ export const supabaseToProduct = (row: ProductRow): Product => ({
   updatedAt: row.updated_at,
 });
 
-export const productToSupabase = (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): ProductInsert => ({
+export const productToSupabase = (
+  userId: UUID,
+  product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>
+): ProductInsert => ({
+  user_id: userId,
   sku: product.sku,
   name: product.name,
   category: product.category,
@@ -59,33 +77,13 @@ export const supabaseToStatus = (row: StatusRow): Status => ({
   updatedAt: row.updated_at,
 });
 
-export const statusToSupabase = (status: Omit<Status, 'id' | 'createdAt' | 'updatedAt'>): StatusInsert => ({
+export const statusToSupabase = (
+  status: Omit<Status, 'id' | 'createdAt' | 'updatedAt'>
+): StatusInsert => ({
   label: status.label,
   color: status.color,
   is_default: status.isDefault,
   order: status.order,
-});
-
-export const supabaseToSale = (row: SaleRow, items: SaleItem[]): Sale => ({
-  id: row.id,
-  date: row.date,
-  items,
-  totalRevenue: row.total_revenue,
-  totalCost: row.total_cost,
-  totalProfit: row.total_profit,
-  paymentMethod: row.payment_method,
-  note: row.note,
-  createdAt: row.created_at,
-  updatedAt: row.updated_at,
-});
-
-export const saleToSupabase = (sale: Omit<Sale, 'id' | 'createdAt' | 'updatedAt' | 'items'>): SaleInsert => ({
-  date: sale.date,
-  total_revenue: sale.totalRevenue,
-  total_cost: sale.totalCost,
-  total_profit: sale.totalProfit,
-  payment_method: sale.paymentMethod,
-  note: sale.note,
 });
 
 export const supabaseToSaleItem = (row: SaleItemRow): SaleItem => ({
@@ -107,6 +105,32 @@ export const saleItemToSupabase = (item: Omit<SaleItem, 'id'>): SaleItemInsert =
   profit_line: item.profitLine,
 });
 
+export const supabaseToSale = (row: SaleRow, items: SaleItem[]): Sale => ({
+  id: row.id,
+  date: row.date,
+  items,
+  totalRevenue: row.total_revenue,
+  totalCost: row.total_cost,
+  totalProfit: row.total_profit,
+  paymentMethod: row.payment_method,
+  note: row.note,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const saleToSupabase = (
+  userId: UUID,
+  sale: Omit<Sale, 'id' | 'createdAt' | 'updatedAt' | 'items'>
+): SaleInsert => ({
+  user_id: userId,
+  date: sale.date,
+  total_revenue: sale.totalRevenue,
+  total_cost: sale.totalCost,
+  total_profit: sale.totalProfit,
+  payment_method: sale.paymentMethod,
+  note: sale.note,
+});
+
 export const supabaseToExpense = (row: ExpenseRow): Expense => ({
   id: row.id,
   label: row.label,
@@ -118,7 +142,11 @@ export const supabaseToExpense = (row: ExpenseRow): Expense => ({
   updatedAt: row.updated_at,
 });
 
-export const expenseToSupabase = (expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>): ExpenseInsert => ({
+export const expenseToSupabase = (
+  userId: UUID,
+  expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>
+): ExpenseInsert => ({
+  user_id: userId,
   label: expense.label,
   category: expense.category,
   amount: expense.amount,
@@ -131,38 +159,44 @@ export const supabaseToPreferences = (row: PreferencesRow): Preferences => ({
   paymentMethods: JSON.parse(row.payment_methods) as PaymentMethodOption[],
 });
 
-export const preferencesToSupabase = (prefs: Preferences): PreferencesInsert => ({
+export const preferencesToSupabase = (userId: UUID, prefs: Preferences): PreferencesInsert => ({
+  user_id: userId,
   currency: prefs.currency,
   payment_methods: JSON.stringify(prefs.paymentMethods),
 });
 
-// Service classes for database operations
+/**
+ * =========================
+ * SERVICES
+ * =========================
+ */
+
 export class ProductService {
   static async getAll(): Promise<Product[]> {
+    const userId = await UserService.getCurrentUserId();
+
     const { data, error } = await supabase
       .from('products')
       .select('*')
+      .eq('user_id', userId)
       .order('updated_at', { ascending: false });
 
     if (error) throw error;
-    return data.map(supabaseToProduct);
+    return (data ?? []).map(supabaseToProduct);
   }
 
   static async getById(id: string): Promise<Product | null> {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('id', id)
-      .single();
-
+    const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
     if (error) throw error;
-    return supabaseToProduct(data);
+    return data ? supabaseToProduct(data) : null;
   }
 
   static async create(product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> {
+    const userId = await UserService.getCurrentUserId();
+
     const { data, error } = await supabase
       .from('products')
-      .insert(productToSupabase(product))
+      .insert(productToSupabase(userId, product))
       .select()
       .single();
 
@@ -170,9 +204,11 @@ export class ProductService {
     return supabaseToProduct(data);
   }
 
-  static async update(id: string, updates: Partial<Omit<Product, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Product> {
+  static async update(
+    id: string,
+    updates: Partial<Omit<Product, 'id' | 'createdAt' | 'updatedAt'>>
+  ): Promise<Product> {
     const supabaseUpdates: ProductUpdate = {};
-    
     if (updates.sku !== undefined) supabaseUpdates.sku = updates.sku;
     if (updates.name !== undefined) supabaseUpdates.name = updates.name;
     if (updates.category !== undefined) supabaseUpdates.category = updates.category;
@@ -195,11 +231,7 @@ export class ProductService {
   }
 
   static async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
-
+    const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) throw error;
   }
 }
@@ -212,7 +244,7 @@ export class StatusService {
       .order('order', { ascending: true });
 
     if (error) throw error;
-    return data.map(supabaseToStatus);
+    return (data ?? []).map(supabaseToStatus);
   }
 
   static async create(status: Omit<Status, 'id' | 'createdAt' | 'updatedAt'>): Promise<Status> {
@@ -226,9 +258,11 @@ export class StatusService {
     return supabaseToStatus(data);
   }
 
-  static async update(id: string, updates: Partial<Omit<Status, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Status> {
+  static async update(
+    id: string,
+    updates: Partial<Omit<Status, 'id' | 'createdAt' | 'updatedAt'>>
+  ): Promise<Status> {
     const supabaseUpdates: StatusUpdate = {};
-    
     if (updates.label !== undefined) supabaseUpdates.label = updates.label;
     if (updates.color !== undefined) supabaseUpdates.color = updates.color;
     if (updates.isDefault !== undefined) supabaseUpdates.is_default = updates.isDefault;
@@ -246,58 +280,60 @@ export class StatusService {
   }
 
   static async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('statuses')
-      .delete()
-      .eq('id', id);
-
+    const { error } = await supabase.from('statuses').delete().eq('id', id);
     if (error) throw error;
   }
 }
 
 export class SaleService {
   static async getAll(): Promise<Sale[]> {
+    const userId = await UserService.getCurrentUserId();
+
     const { data: sales, error } = await supabase
       .from('sales')
       .select('*')
+      .eq('user_id', userId)
       .order('date', { ascending: false });
 
     if (error) throw error;
+    if (!sales?.length) return [];
 
-    // Get all sale items for these sales
-    const saleIds = sales.map(s => s.id);
-    const { data: items } = await supabase
+    const saleIds = sales.map((s) => s.id);
+
+    const { data: items, error: itemsError } = await supabase
       .from('sale_items')
       .select('*')
       .in('sale_id', saleIds);
 
-    if (!items) throw new Error('Failed to fetch sale items');
+    if (itemsError) throw itemsError;
 
-    // Group items by sale
-    const itemsBySale = items.reduce((acc, item) => {
-      if (!acc[item.sale_id]) acc[item.sale_id] = [];
-      acc[item.sale_id].push(supabaseToSaleItem(item));
+    const itemsBySale = (items ?? []).reduce((acc, item) => {
+      const key = item.sale_id;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(supabaseToSaleItem(item));
       return acc;
     }, {} as Record<string, SaleItem[]>);
 
-    return sales.map(sale => supabaseToSale(sale, itemsBySale[sale.id] || []));
+    return sales.map((sale) => supabaseToSale(sale, itemsBySale[sale.id] || []));
   }
 
   static async create(sale: Omit<Sale, 'id' | 'createdAt' | 'updatedAt'>): Promise<Sale> {
-    // Start a transaction
+    const userId = await UserService.getCurrentUserId();
+
     const { data: saleData, error: saleError } = await supabase
       .from('sales')
-      .insert(saleToSupabase(sale))
+      .insert(saleToSupabase(userId, sale))
       .select()
       .single();
 
     if (saleError) throw saleError;
 
-    // Insert sale items
-    const itemsToInsert = sale.items.map(item => saleItemToSupabase({
-      ...item,
-      saleId: saleData.id
-    }));
+    const itemsToInsert = sale.items.map((item) =>
+      saleItemToSupabase({
+        ...item,
+        saleId: saleData.id,
+      })
+    );
 
     const { data: itemsData, error: itemsError } = await supabase
       .from('sale_items')
@@ -306,52 +342,44 @@ export class SaleService {
 
     if (itemsError) throw itemsError;
 
-    return supabaseToSale(saleData, itemsData.map(supabaseToSaleItem));
+    return supabaseToSale(saleData, (itemsData ?? []).map(supabaseToSaleItem));
   }
 
   static async delete(id: string): Promise<void> {
-    // Delete sale items first (foreign key constraint)
-    await supabase
-      .from('sale_items')
-      .delete()
-      .eq('sale_id', id);
+    const { error: itemsErr } = await supabase.from('sale_items').delete().eq('sale_id', id);
+    if (itemsErr) throw itemsErr;
 
-    // Then delete the sale
-    const { error } = await supabase
-      .from('sales')
-      .delete()
-      .eq('id', id);
-
+    const { error } = await supabase.from('sales').delete().eq('id', id);
     if (error) throw error;
   }
 }
 
 export class ExpenseService {
   static async getAll(): Promise<Expense[]> {
+    const userId = await UserService.getCurrentUserId();
+
     const { data, error } = await supabase
       .from('expenses')
       .select('*')
+      .eq('user_id', userId)
       .order('date', { ascending: false });
 
     if (error) throw error;
-    return data.map(supabaseToExpense);
+    return (data ?? []).map(supabaseToExpense);
   }
 
   static async getById(id: string): Promise<Expense | null> {
-    const { data, error } = await supabase
-      .from('expenses')
-      .select('*')
-      .eq('id', id)
-      .single();
-
+    const { data, error } = await supabase.from('expenses').select('*').eq('id', id).single();
     if (error) throw error;
-    return supabaseToExpense(data);
+    return data ? supabaseToExpense(data) : null;
   }
 
   static async create(expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>): Promise<Expense> {
+    const userId = await UserService.getCurrentUserId();
+
     const { data, error } = await supabase
       .from('expenses')
-      .insert(expenseToSupabase(expense))
+      .insert(expenseToSupabase(userId, expense))
       .select()
       .single();
 
@@ -359,9 +387,11 @@ export class ExpenseService {
     return supabaseToExpense(data);
   }
 
-  static async update(id: string, updates: Partial<Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Expense> {
+  static async update(
+    id: string,
+    updates: Partial<Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>>
+  ): Promise<Expense> {
     const supabaseUpdates: ExpenseUpdate = {};
-    
     if (updates.label !== undefined) supabaseUpdates.label = updates.label;
     if (updates.category !== undefined) supabaseUpdates.category = updates.category;
     if (updates.amount !== undefined) supabaseUpdates.amount = updates.amount;
@@ -380,21 +410,20 @@ export class ExpenseService {
   }
 
   static async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('expenses')
-      .delete()
-      .eq('id', id);
-
+    const { error } = await supabase.from('expenses').delete().eq('id', id);
     if (error) throw error;
   }
 }
 
 export class PreferencesService {
   static async get(): Promise<Preferences | null> {
+    const userId = await UserService.getCurrentUserId();
+
     const { data, error } = await supabase
       .from('preferences')
       .select('*')
       .eq('id', 'default')
+      .eq('user_id', userId)
       .single();
 
     if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found
@@ -404,12 +433,14 @@ export class PreferencesService {
   }
 
   static async update(preferences: Preferences): Promise<Preferences> {
+    const userId = await UserService.getCurrentUserId();
+
     const { data, error } = await supabase
       .from('preferences')
       .upsert({
         id: 'default',
-        ...preferencesToSupabase(preferences),
-        updated_at: new Date().toISOString()
+        ...preferencesToSupabase(userId, preferences),
+        updated_at: new Date().toISOString(),
       })
       .select()
       .single();
