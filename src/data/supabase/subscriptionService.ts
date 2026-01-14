@@ -34,6 +34,25 @@ export class SubscriptionService {
     return data;
   }
 
+  static async createPremiumSubscription(userId: string): Promise<SubscriptionRow> {
+    const subscriptionEndsAt = new Date();
+    subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + 1); // 1 mois d'abonnement
+
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .insert({
+        user_id: userId,
+        status: 'active',
+        subscription_ends_at: subscriptionEndsAt.toISOString(),
+        plan_type: 'premium'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
   static async getSubscription(userId: string): Promise<SubscriptionRow | null> {
     const { data, error } = await supabase
       .from('subscriptions')
