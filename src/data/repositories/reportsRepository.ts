@@ -30,6 +30,7 @@ export interface DashboardStats {
   totals: ReturnType<typeof calcSaleTotals>;
   topProducts: Awaited<ReturnType<SalesRepository['getTopProducts']>>;
   stock: StockSnapshot;
+  stockMovements: Awaited<ReturnType<ProductsRepository['getStockMovements']>>;
   period: DateRange;
   salesCount: number;
   avgOrderValue: number;
@@ -92,6 +93,7 @@ export class ReportsRepository {
     const totals = calcSaleTotals(sales.flatMap((sale) => sale.items));
     const topProducts = await this.salesRepository.getTopProducts(5);
     const stock = await this.productsRepository.getStockSummary();
+    const stockMovements = await this.productsRepository.getStockMovements();
     const preferences = await this.preferencesRepository.get();
     const expenseSummary = await this.expensesRepository.summary({ range: rangeFilter });
     const expenseTotal = expenseSummary.total;
@@ -159,6 +161,7 @@ export class ReportsRepository {
       totals,
       topProducts,
       stock,
+      stockMovements,
       period: rangeFilter,
       salesCount: sales.length,
       avgOrderValue,

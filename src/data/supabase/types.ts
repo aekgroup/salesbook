@@ -15,6 +15,7 @@ export interface Database {
           purchase_price: number;
           sale_price: number;
           quantity: number;
+          initial_stock: number;
           status_id: UUID;
           reorder_threshold: number;
           created_at: string;

@@ -45,6 +45,7 @@ export const supabaseToProduct = (row: ProductRow): Product => ({
   purchasePrice: row.purchase_price,
   salePrice: row.sale_price,
   quantity: row.quantity,
+  initialStock: row.initial_stock,
   statusId: row.status_id,
   reorderThreshold: row.reorder_threshold,
   createdAt: row.created_at,
@@ -63,6 +64,7 @@ export const productToSupabase = (
   purchase_price: product.purchasePrice,
   sale_price: product.salePrice,
   quantity: product.quantity,
+  initial_stock: product.initialStock,
   status_id: product.statusId,
   reorder_threshold: product.reorderThreshold,
 });
@@ -218,8 +220,9 @@ export class ProductService {
     if (updates.quantity !== undefined) supabaseUpdates.quantity = updates.quantity;
     if (updates.statusId !== undefined) supabaseUpdates.status_id = updates.statusId;
     if (updates.reorderThreshold !== undefined) supabaseUpdates.reorder_threshold = updates.reorderThreshold;
-
-    const { data, error } = await supabase
+if (updates.initialStock !== undefined) supabaseUpdates.initial_stock = updates.initialStock;
+    
+const { data, error } = await supabase
       .from('products')
       .update(supabaseUpdates)
       .eq('id', id)

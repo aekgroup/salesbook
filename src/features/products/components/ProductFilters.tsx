@@ -10,6 +10,7 @@ export interface ProductFiltersState {
   search: string;
   statusId?: string;
   lowStockOnly: boolean;
+  stockMovement?: 'sold' | 'received' | 'unchanged';
 }
 
 export interface ProductFiltersProps {
@@ -32,9 +33,13 @@ export const ProductFilters = ({ filters, statuses, onChange, onReset }: Product
     onChange({ ...filters, lowStockOnly: !filters.lowStockOnly });
   };
 
+  const handleStockMovementFilter = (movement?: 'sold' | 'received' | 'unchanged') => {
+    onChange({ ...filters, stockMovement: filters.stockMovement === movement ? undefined : movement });
+  };
+
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Input
           label="Recherche"
           name="search"
@@ -59,6 +64,32 @@ export const ProductFilters = ({ filters, statuses, onChange, onReset }: Product
               onClick={toggleLowStock}
             >
               {filters.lowStockOnly ? 'Seulement seuil bas' : 'Tous les niveaux'}
+            </Badge>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+          <span>Mouvements</span>
+          <div className="flex flex-wrap gap-2">
+            <Badge
+              variant={filters.stockMovement === 'sold' ? 'danger' : 'default'}
+              className="cursor-pointer"
+              onClick={() => handleStockMovementFilter('sold')}
+            >
+              Vendus
+            </Badge>
+            <Badge
+              variant={filters.stockMovement === 'received' ? 'success' : 'default'}
+              className="cursor-pointer"
+              onClick={() => handleStockMovementFilter('received')}
+            >
+              Reçus
+            </Badge>
+            <Badge
+              variant={filters.stockMovement === 'unchanged' ? 'info' : 'default'}
+              className="cursor-pointer"
+              onClick={() => handleStockMovementFilter('unchanged')}
+            >
+              Stables
             </Badge>
           </div>
         </div>

@@ -19,6 +19,8 @@ export const ProductForm = ({ defaultValues, statuses, onSubmit, onCancel, loadi
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema) as Resolver<ProductFormValues>,
@@ -30,10 +32,18 @@ export const ProductForm = ({ defaultValues, statuses, onSubmit, onCancel, loadi
       purchasePrice: 0,
       salePrice: 0,
       quantity: 0,
+      initialStock: 0,
       statusId: statuses[0]?.id ?? '',
       reorderThreshold: 5,
     },
   });
+
+  const watchedQuantity = watch('quantity');
+  const watchedInitialStock = watch('initialStock');
+
+  const handleSetInitialStock = () => {
+    setValue('initialStock', watchedQuantity);
+  };
 
   useEffect(() => {
     if (defaultValues) {
@@ -67,14 +77,33 @@ export const ProductForm = ({ defaultValues, statuses, onSubmit, onCancel, loadi
           error={errors.salePrice?.message}
         />
         <Input
-          label="Quantité"
+          label="Stock initial"
           type="number"
           min={0}
-          {...register('quantity', { valueAsNumber: true })}
-          error={errors.quantity?.message}
+          {...register('initialStock', { valueAsNumber: true })}
+          error={errors.initialStock?.message}
+          placeholder="Quantité initiale lors de la création"
         />
+        <div className="space-y-2">
+          <Input
+            label="Stock actuel"
+            type="number"
+            min={0}
+            {...register('quantity', { valueAsNumber: true })}
+            error={errors.quantity?.message}
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={handleSetInitialStock}
+            className="w-full"
+          >
+            Définir comme stock initial
+          </Button>
+        </div>
         <Input
-          label="Seuil d’alerte"
+          label="Seuil d'alerte"
           type="number"
           min={0}
           {...register('reorderThreshold', { valueAsNumber: true })}

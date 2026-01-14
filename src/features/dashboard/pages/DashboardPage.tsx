@@ -30,6 +30,7 @@ export const DashboardPage = () => {
 
   const totals = data?.totals;
   const stock = data?.stock;
+  const stockMovements = data?.stockMovements;
 
   const statCards = useMemo(() => {
     const expenseTotal = data?.expenseTotal ?? 0;
@@ -63,12 +64,22 @@ export const DashboardPage = () => {
       {
         title: 'Valeur du stock',
         value: stock ? formatCurrency(stock.totalPotential) : '—',
-        hint: stock ? `${formatCurrency(stock.totalCost)} de coût · ${stock.lowStockCount} bas stocks` : '',
+        hint: stock 
+          ? `${formatCurrency(stock.totalCost)} de coût · ${stock.lowStockCount} bas stocks` 
+          : '',
         icon: <Package2 className="h-6 w-6" />,
         layout: 'wide' as const,
       },
+      {
+        title: 'Mouvements stock',
+        value: stockMovements ? `${stockMovements.totalSold > 0 ? '-' : '+'}${formatNumber(Math.abs(stockMovements.totalSold))}` : '—',
+        hint: stockMovements 
+          ? `Initial: ${formatNumber(stockMovements.initialStockTotal)} → Actuel: ${formatNumber(stockMovements.currentStock)}`
+          : '',
+        icon: <TrendingUp className="h-6 w-6" />,
+      },
     ];
-  }, [data, stock, totals]);
+  }, [data, stock, stockMovements, totals]);
 
   const handlePeriodChange = (value: DashboardPeriod) => {
     setPeriod(value);

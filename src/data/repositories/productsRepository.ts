@@ -22,6 +22,20 @@ export class ProductsRepository {
       if (filters.statusId && product.statusId !== filters.statusId) return false;
       if (filters.category && product.category !== filters.category) return false;
       if (filters.lowStockOnly && product.quantity > product.reorderThreshold) return false;
+      
+      // Filtrage par mouvements de stock
+      if (filters.stockMovement) {
+        const stockVariation = product.quantity - product.initialStock;
+        switch (filters.stockMovement) {
+          case 'sold':
+            return stockVariation < 0;
+          case 'received':
+            return stockVariation > 0;
+          case 'unchanged':
+            return stockVariation === 0;
+        }
+      }
+      
       return true;
     });
 
@@ -62,6 +76,7 @@ export class ProductsRepository {
       purchasePrice: input.purchasePrice,
       salePrice: input.salePrice,
       quantity: input.quantity ?? 0,
+      initialStock: input.quantity ?? 0, // NOUVEAU // Inserer le quantity 
       statusId: input.statusId,
       reorderThreshold: input.reorderThreshold ?? 5,
     };
@@ -85,6 +100,7 @@ export class ProductsRepository {
       purchasePrice: updates.purchasePrice ?? existing.purchasePrice,
       salePrice: updates.salePrice ?? existing.salePrice,
       quantity: updates.quantity ?? existing.quantity,
+      initialStock: updates.initialStock ?? existing.initialStock, // NOUVEAU
       statusId: updates.statusId ?? existing.statusId,
       reorderThreshold: updates.reorderThreshold ?? existing.reorderThreshold,
     };
@@ -125,6 +141,27 @@ export class ProductsRepository {
       totalProducts: products.length,
     };
   }
+
+  async getStockMovements(): Promise<{
+  totalSold: number;
+  totalReceived: number;
+  currentStock: number;
+  initialStockTotal: number;
+}> {
+  const products = await this.list();
+  const initialStockTotal = products.reduce((acc, p) => acc + p.initialStock, 0);
+  const currentStock = products.reduce((acc, p) => acc + p.quantity, 0);
+  const totalSold = Math.max(0, initialStockTotal - currentStock);
+  const totalReceived = Math.max(0, currentStock - initialStockTotal);
+
+  return {
+    totalSold,
+    totalReceived,
+    currentStock,
+    initialStockTotal,
+  };
+}
+
 
   /**
    * Validation SKU unique côté app.

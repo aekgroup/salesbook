@@ -68,10 +68,25 @@ export const ProductTable = ({ data, statuses = [], onEdit, onDelete }: ProductT
         cell: ({ row }) => {
           const product = row.original;
           const isLow = product.quantity <= product.reorderThreshold;
+          const stockVariation = product.quantity - product.initialStock;
+          const isPositiveVariation = stockVariation > 0;
+          const isNegativeVariation = stockVariation < 0;
+          
           return (
-            <div className="space-y-1 text-sm">
-              <p className="font-semibold text-slate-900">{product.quantity}</p>
-              <p className="text-xs text-slate-500">Seuil: {product.reorderThreshold}</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-slate-900">{product.quantity}</span>
+                {isPositiveVariation && (
+                  <span className="text-xs text-emerald-600">+{stockVariation}</span>
+                )}
+                {isNegativeVariation && (
+                  <span className="text-xs text-red-600">{stockVariation}</span>
+                )}
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-500">Initial: {product.initialStock}</p>
+                <p className="text-xs text-slate-500">Seuil: {product.reorderThreshold}</p>
+              </div>
               {isLow && LOW_STOCK_BADGE}
             </div>
           );

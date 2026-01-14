@@ -21,6 +21,7 @@ export interface Product {
   purchasePrice: number;
   salePrice: number;
   quantity: number;
+  initialStock: number;// Ajout de initial stock.
   statusId: UUID;
   reorderThreshold: number;
   createdAt: string;
@@ -62,6 +63,7 @@ export interface ProductFilters {
   statusId?: UUID;
   category?: string;
   lowStockOnly?: boolean;
+  stockMovement?: 'sold' | 'received' | 'unchanged';
   sortBy?: 'name' | 'salePrice' | 'quantity' | 'updatedAt';
   sortDir?: 'asc' | 'desc';
 }
@@ -96,6 +98,7 @@ export const productSchema = z.object({
   purchasePrice: z.number().min(0, 'Coût invalide'),
   salePrice: z.number().min(0, 'Prix invalide'),
   quantity: z.number().min(0).default(0),
+  initialStock: z.number().min(0).default(0), // NOUVEAU CHAMP
   statusId: z.string().min(1, 'Statut requis'),
   reorderThreshold: z.number().min(0).default(5),
 });
